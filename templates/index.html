@@ -19,6 +19,22 @@
           <li><a href="/addressbooks" role="button">Switch to addressbooks</a></li>
           <li><a href="/news" role="button">News</a></li>
         </ul>
+        <form method="POST" action="note/result">
+          <input type="search" name="key" placeholder="type something" required>
+          <button type="submit">Search</button>
+        </form>
+        <form method="POST">
+          <select name="tag_ch" id="tag_ch" >
+            <option disabled selected value> --All tegs-- </option>
+            <!-- <option> --All tegs-- </option> -->
+            {% for tag in tags %}
+                <option value={{tag.id}}>{{tag.name}}</option>
+            {% endfor %}
+          </select>
+          <button style="width: 300px; margin-bottom: 20px; padding-left: 10px" type="submit">
+            Submit
+          </button>
+        </form>
       </nav>
 
       {% for note in notes %}
@@ -36,6 +52,9 @@
 
           <a href="/detail/{{note.id}}" role="button" class="secondary"
             ><s>{{note.name}}</s></a
+          >
+          <a href="/delete/{{note.id}}" role="button" class="contrast"
+            >Delete note</a
           >
           {% endif %}
         </li>

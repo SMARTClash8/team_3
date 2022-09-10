@@ -1,7 +1,7 @@
 import datetime
 from flask import Flask, render_template, request, redirect, url_for
-from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session
-from news_parsing import get_wp_news
+from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
+from sqlalchemy import or_
 
 
 app = Flask(__name__)
@@ -9,10 +9,17 @@ app.debug = True
 app.env = "development"
 
 
-@app.route("/", strict_slashes=False)
+@app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
     notes = db_session.query(Note).all()
-    return render_template("index.html", notes=notes)
+
+    if request.method == "POST":
+        id_tag = request.form.get("tag_choose")
+        if id_tag:
+            notes = db_session.query(Note).join(note_m2m_tag, isouter=True).join(Tag, isouter=True).filter(Tag.id == id_tag).all()
+    tags = db_session.query(Tag).all()
+
+    return render_template("index.html", notes=notes, tags=tags)
 
 @app.route("/news", methods=["GET"], strict_slashes=False)
 def get_news():
@@ -194,6 +201,21 @@ def done(id):
     db_session.commit()
 
     return redirect("/")
+
+
+@app.route("/note/result", methods=["GET", "POST"], strict_slashes=False)
+def search_in_notes():
+    if request.method == "POST":
+        key= request.form.get("key")
+        asc_table_res = db_session.query(note_m2m_tag).\
+                    join(Note, isouter=True).\
+                    join(Tag, isouter=True).\
+                    filter(or_(
+                        Note.name.like(f'%{key}%'),
+                        Tag.name.like(f'%{key}%'),
+                        Note.description.like(f'%{key}%'))).all()
+        res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
+        return render_template("note_result.html", notes=res_notes, key=key, count_res=len(res_notes))
 
 
 if __name__ == "__main__":
