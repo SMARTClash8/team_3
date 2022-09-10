@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Organizer</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+      >
+        <ul>
+          <li><a href="/record/{{ book_id }}" role="button">Create a new record for {{ book_id }}</a></li>
+          <li><a href="/addressbooks" role="button">Go back to Addressbooks </a></li>
+          <li><a href="/" role="button">Main Menu</a></li>
+        </ul> 
+      </nav>
+
+      {% for record in records %}
+      <ul>
+        <li>
+          <a href="/record/{{book_id}}/{{record.id}}" role="button" class="secondary"
+            > ID: {{record.id}} Name: {{record.name}}</a
+          >
+          <span {{record.name}} class="outline">
+          <a href="/deleterecord/{{book_id}}/{{record.id}}" role="button" class="contrast"
+            >Delete record</a
+        </li>
+      </ul>
+      {% endfor %}
+    </main>
+  </body>
+</html>

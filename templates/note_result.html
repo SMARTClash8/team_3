@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Organizer</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+        <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+        >
+        <ul>
+          <li><a href="/" role="button"> Go back to the main page </a></li>
+        </ul>
+        </nav>
+        <h5 style="margin-bottom: 0px" align=left class="title">Number of matches: {{count_res}}</h5>
+        <hr style="color:white; height: 4px; padding: 10px;">
+        <h5 style="margin-bottom: 0px" align=letf class="title">Search word: "{{key}}"</h5>
+        <hr style="color:white; height: 4px; padding: 10px;">
+        {% for note in notes %}
+        <ul>
+            <li>
+            {%if not note.done%}
+            <a href="/detail/{{note.id}}" role="button" class="outline">{{note.name}}</a>
+            Tags: {{note.tags}}
+
+            <!-- <a href="/done/{{note.id}}" role="button">Mark Done</a> -->
+            <!-- <a href="/delete/{{note.id}}" role="button" class="contrast"
+                >Delete note</a
+            > -->
+            {% else %}
+
+            <a href="/detail/{{note.id}}" role="button" class="secondary"><s>{{note.name}}</s></a>
+            <!-- <a href="/detail/{{note.id}}" role="button" class="secondary"><s>{{note.tag}}</s></a> -->
+            {% endif %}
+            </li>
+        </ul>
+        {% endfor %}
+    </main>
+  </body>
+</html>

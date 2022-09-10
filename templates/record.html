@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add record</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+      >
+        <ul>
+          <li><a href="/" role="button"> Go back to the main pag </a></li>
+          <li><a href="/reecord/{{book_id}}/{{record_id}}" role="button"> Go back to records </a></li>
+        </ul>
+      </nav>
+      <form method="POST" action="/record/{{book_id}}">
+        <div style="padding: 10px">
+          <label
+            >User name:
+            <input type="text" name="name" required />
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User birthday:
+            <input type="text" name="birthday" required />
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User Phone:
+            <input type="text" name="phone"/>
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User Phone2:
+            <input type="text" name="phone"/>
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User Email:
+            <input type="text" name="email" required />
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User Email2:
+            <input type="text" name="email"/>
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User Address:
+            <input type="text" name="address"/>
+          </label>
+        </div>
+        <div style="padding: 10px">
+          <label
+            >User Address2:
+            <input type="text" name="address" />
+          </label>
+        </div>
+        <div style="padding: 10px">
+        </div>
+        <div class="grid">
+          <button type="reset" class="secondary">Reset</button>
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>
