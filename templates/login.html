@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Organizer</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+      >
+        <ul>
+          <li><a href="/" role="button">Main Menu</a></li>
+        </ul>
+      </nav>
+      <form>
+
+        <div class="grid">
+      
+          <label for="firstname">
+            First name
+            <input type="text" id="firstname" name="firstname" placeholder="First name" required>
+          </label>
+      
+          <label for="lastname">
+            Last name
+            <input type="text" id="lastname" name="lastname" placeholder="Last name" required>
+          </label>
+      
+        </div>
+      
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="Email address" required>
+        <small>We'll never share your email with anyone else.</small>
+      
+        <button type="submit">Submit</button>
+      
+      </form>
+ 
+
+    </main>
+  </body>
+</html>
