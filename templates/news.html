@@ -14,35 +14,19 @@
         style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
       >
         <ul>
-          <li><a href="/note/" role="button">Add note</a></li>
-          <li><a href="/tag/" role="button">Add Tag</a></li>
-          <li><a href="/addressbooks" role="button">Switch to addressbooks</a></li>
           <li><a href="/" role="button">Main Menu</a></li>
         </ul>
       </nav>
+      {% for article in news%}
       <blockquote>
-        "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-        Nam at dui sit amet ipsum cursus ornare."
-        <footer>
-          <cite>- Phasellus eget lacinia</cite>
-        </footer>
-      </blockquote>
-      <blockquote>
-        "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-        Nam at dui sit amet ipsum cursus ornare."
-        <footer>
-          <cite>- Phasellus eget lacinia</cite>
-        </footer>
-      </blockquote>
-      <blockquote>
-        "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-        Nam at dui sit amet ipsum cursus ornare."
-        <footer>
-          <cite>- Phasellus eget lacinia</cite>
-        </footer>
-      </blockquote>
- 
+        <b> {{article.name}}</b>
+        <br> {{article.description}}
 
+        <footer>
+          <cite>by {{article.author}},  {{article.source}}</cite>
+        </footer>
+      </blockquote>
+      {% endfor %}
     </main>
   </body>
 </html>

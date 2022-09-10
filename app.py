@@ -1,6 +1,7 @@
 import datetime
 from flask import Flask, render_template, request, redirect, url_for
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session
+from news_parsing import get_wp_news
 
 
 app = Flask(__name__)
@@ -12,6 +13,11 @@ app.env = "development"
 def index():
     notes = db_session.query(Note).all()
     return render_template("index.html", notes=notes)
+
+@app.route("/news", methods=["GET"], strict_slashes=False)
+def get_news():
+    news = get_wp_news()
+    return render_template("news.html", news=news)
 
 
 @app.route("/addressbooks", methods=["GET"], strict_slashes=False)
