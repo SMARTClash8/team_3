@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Organizer</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+      >
+        <ul>
+          <li><a href="/addressbook/" role="button">Create a new book</a></li>
+          <li><a href="/" role="button">Main Menu</a></li>
+        </ul> 
+      </nav>
+
+      {% for ab in address_books%}
+      <ul>
+        <li>
+          <a href="/records/{{ab.id}}" role="button" class="secondary"
+            > ID: {{ab.id}} Name: {{ab.name}}</a
+          >
+          <span {{ab.name}} class="outline">
+          <a href="/delete/addressbook/{{ab.id}}" role="button" class="contrast"
+            >Delete addressbook</a
+        </li>
+      </ul>
+      {% endfor %}
+    </main>
+  </body>
+</html>

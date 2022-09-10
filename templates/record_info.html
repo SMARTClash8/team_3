@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Organizer</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+      >
+        <ul>
+          <li><a href="/records/{{ book_id }}" role="button">Go back to records</a></li>
+          <li><a href="/" role="button">Main Menu</a></li>
+        </ul> 
+      </nav>
+
+      <ul>
+        <li>
+          ID: {{record.id}} Name: {{record.name}}
+        </li>
+        <li>
+          Birthday: {{birthday}}
+        </li>
+        <li>
+          Phones: 
+          <span {{record.phones}} class="outline">
+            <a href="/change/record/{{ book_id }}/{{record.id}}?name=phone" role="button" class="secondary"
+            >Add data</a
+          <ol>
+          {% for phone in record.phones %} 
+          <li>
+          {{phone.name}}
+          <span {{record.phones}} class="outline">
+            <a href="/delete/{{ book_id }}/{{record.id}}?name=phone&id={{phone.name}}" role="button" class="contrast"
+            >Delete record</a
+
+          </li>
+          {% endfor %}
+          </ol>
+
+        </li>
+        <li>
+          Emails:
+          <span {{record.phones}} class="outline">
+            <a href="/change/record/{{ book_id }}/{{record.id}}?name=email" role="button" class="secondary"
+            >Add data</a
+          <ol>
+            {% for email in record.emails %} 
+            <li>
+            {{email.name}}
+            <span {{record.phones}} class="outline">
+              <a href="/delete/{{ book_id }}/{{record.id}}?name=email&id={{email.name}}" role="button" class="contrast"
+              >Delete record</a
+
+            </li>
+            {% endfor %}
+            </ol>
+          </li>
+        <li>
+          Addresses: 
+          <span {{record.phones}} class="outline">
+            <a href="/change/record/{{ book_id }}/{{record.id}}?name=address" role="button" class="secondary"
+            >Add data</a
+          <ol>
+            {% for address in record.addresses %} 
+            <li>
+            {{address.name}} 
+            <span {{address.name}} class="outline">
+              <a href="/delete/{{ book_id }}/{{record.id}}?name=address&id={{address.name}}" role="button" class="contrast"
+              >Delete record</a
+
+            </li>
+            {% endfor %}
+            </ol>
+          </li>
+      </ul>
+  
+    </main>
+  </body>
+</html>
