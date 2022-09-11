@@ -2,13 +2,12 @@ import datetime
 from flask import Flask, render_template, request, redirect, url_for
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
 from sqlalchemy import or_
-
-
+from forms import RecordForm#, LoginForm, RegisterForm
 app = Flask(__name__)
 app.debug = True
 app.env = "development"
-
-
+app.config['SECRET_KEY'] = 'any secret string'
+MAX_CONTENT_LENGHT = 1024 * 1024
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
     notes = db_session.query(Note).all()
@@ -52,23 +51,21 @@ def get_records(book_id):
 @app.route("/record/<book_id>", methods=["GET", "POST"], strict_slashes=False)
 def create_record(book_id):
 
+    form = RecordForm()
     if request.method == "POST":
-
-        name = request.form.get("name")
-        bd_str_to_date = datetime.datetime.strptime(request.form.get("birthday"), "%d.%m.%Y").date()
+        name = form.name.data
+        bd_str_to_date = form.birthday.data
         birthday = Birthday(bd_date=bd_str_to_date)
-        record = Record(name=name, birthday=birthday)
-
-        fields_dict = {"phone": {"class": Phone, "records_attr": record.phones, "get_name": "phone"},
-                       "email": {"class": Email, "records_attr": record.emails, "get_name": "email"},
-                       "address": {"class": Address, "records_attr": record.addresses, "get_name": "address"}
-                       }
-        for item in fields_dict.values():
-            entries = request.form.getlist(item.get("get_name"))
-            for entry in entries:
-                attr_name = item.get("records_attr")
-                class_name = item.get("class")
-                attr_name.append(class_name(name=entry))
+        phone = form.phone.data
+        phones = []
+        phones.append(Phone(name=phone))
+        email = form.email.data
+        emails = []
+        emails.append(Email(name=email))
+        address = form.address.data
+        addresses = []
+        addresses.append(Address(name=address))
+        record = Record(name=name, birthday=birthday, phones=phones, emails=emails, addresses=addresses)
 
         adbook = db_session.query(Address_book).filter(Address_book.id == book_id).first()
         adbook.records.append(record)
@@ -76,8 +73,7 @@ def create_record(book_id):
         db_session.commit()
         return redirect(f"/records/{book_id}")
     
-    return render_template("record.html", book_id=book_id)
-
+    return render_template("record.html", book_id=book_id, form=form)
 
 @app.route("/change/record/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
 def change_record(book_id, record_id):
@@ -110,6 +106,13 @@ def get_record_info(book_id, record_id):
     birthday = record.birthday.bd_date.strftime('%m.%d.%Y')
     return render_template("record_info.html", record_id=record_id, book_id=book_id, record=record, birthday=birthday)
 
+@app.route("/add_record/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
+def add_record(book_id, record_id):
+    data_type = request.args.get("name")
+    db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).delete()
+    db_session.commit()
+
+    return redirect(f"/change/record/{book_id}/{record_id}?name={data_type}")
 
 @app.route("/deleterecord/<book_id>/<record_id>", strict_slashes=False)
 def delete_record(book_id, record_id):
@@ -213,5 +216,37 @@ def search_in_notes():
         return render_template("note_result.html", notes=res_notes, key=key, count_res=len(res_notes))
 
 
+# @app.route("/login", methods=["POST", "GET"])
+# def login():
+
+#     form = LoginForm()
+#     if form.validate_on_submit():
+#         user = dbase.getUserByEmail(form.email.data)
+#         if user and check_password_hash(user['psw'], form.psw.data):
+#             userlogin = UserLogin().create(user)
+#             rm = form.remember.data
+#             login_user(userlogin, remember=rm)
+#             return redirect(request.args.get("next") or url_for("profile"))
+
+#         flash("Неверная пара логин/пароль", "error")
+
+#     return render_template("login_test.html", menu=dbase.getMenu(), title="Авторизация", form=form)
+
+
+# @app.route("/register", methods=["POST", "GET"])
+# def register():
+#     form = RegisterForm()
+#     if form.validate_on_submit():
+#             hash = generate_password_hash(request.form['psw'])
+#             res = dbase.addUser(form.name.data, form.email.data, hash)
+#             if res:
+#                 flash("Вы успешно зарегистрированы", "success")
+#                 return redirect(url_for('login'))
+#             else:
+#                 flash("Ошибка при добавлении в БД", "error")
+
+#     return render_template("register.html", menu=dbase.getMenu(), title="Регистрация", form=form)
+
 if __name__ == "__main__":
     app.run()
+

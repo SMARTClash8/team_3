@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Add record</title>
+    <title>Change {{data_type}}</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
@@ -14,18 +14,20 @@
         style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
       >
         <ul>
-          <li><a href="/" role="button"> Go back to the main pag </a></li>
+          <li><a href="/" role="button"> Go back to the main page </a></li>
           <li><a href="/record/{{book_id}}/{{record_id}}" role="button"> Go back to records </a></li>
         </ul>
       </nav>
-      <form method="POST" action="/record/{{book_id}}">
-        {{ form.hidden_tag() }}
-        <p>{{ form.name.label()}} {{form.name()}}
-        <p>{{ form.birthday.label()}} {{form.birthday()}}
-        <p>{{ form.phone.label()}} {{form.phone()}}
-        <p>{{ form.email.label()}} {{form.email()}}
-        <p>{{ form.address.label()}} {{form.address()}}
-        <p>{{ form.submit() }}
+      <form method="POST" action="/change/record/{{book_id}}/{{record_id}}?name={{data_type}}">
+        <div style="padding: 10px">
+          <label
+            >{{data_type}}:
+            <input type="text" name="name" required />
+          </label>
+        </div>
+          <button type="reset" class="secondary">Reset</button>
+          <button type="submit">Submit</button>
+        </div>
       </form>
     </main>
   </body>
