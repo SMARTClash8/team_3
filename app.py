@@ -3,12 +3,15 @@ from flask import Flask, render_template, request, redirect, url_for
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
 from sqlalchemy import or_
 from forms import RecordForm#, LoginForm, RegisterForm
+from collections import defaultdict
 from new_parsing import get_wp_news
+
 app = Flask(__name__)
 app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
 MAX_CONTENT_LENGHT = 1024 * 1024
+
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
     notes = db_session.query(Note).all()
@@ -185,9 +188,10 @@ def add_tag():
         tag = Tag(name=name)
         db_session.add(tag)
         db_session.commit()
-        return redirect("/")
+        return redirect(f"/tag")
 
-    return render_template("tag.html")
+    tags = db_session.query(Tag).all()
+    return render_template("tag.html", tags=tags)
 
 
 @app.route("/delete/<id>", strict_slashes=False)
@@ -209,6 +213,7 @@ def done(id):
 @app.route("/note/result", methods=["GET", "POST"], strict_slashes=False)
 def search_in_notes():
     if request.method == "POST":
+        notes = []
         key= request.form.get("key")
         asc_table_res = db_session.query(note_m2m_tag).\
                     join(Note, isouter=True).\
@@ -217,8 +222,40 @@ def search_in_notes():
                         Note.name.like(f'%{key}%'),
                         Tag.name.like(f'%{key}%'),
                         Note.description.like(f'%{key}%'))).all()
-        res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
-        return render_template("note_result.html", notes=res_notes, key=key, count_res=len(res_notes))
+        for obj in asc_table_res:
+            res_note = db_session.query(Note).filter(Note.id == obj.id).first()
+            if res_note:
+               notes.append(res_note)
+        #res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
+        return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
+
+@app.route("/delete/tag/<id>", strict_slashes=False)
+def delete_tag(id):
+    db_session.query(Tag).filter(Tag.id == id).delete()
+    db_session.commit()
+
+    return redirect(f"/tag")
+
+
+@app.route("/addressbooks/birthdays", methods=["GET", "POST"], strict_slashes=False)
+def coming_birthday():
+    range_days = 7
+    if request.method == "POST":
+        inp_brth = request.form.get("key")
+        if inp_brth: 
+            range_days = int(inp_brth)
+
+    birthdays_dict = defaultdict(list)
+    current_date = datetime.datetime.now().date()
+    timedelta_filter = datetime.timedelta(days=range_days)
+    for name, birthday in [i for i in db_session.query(Record.name, Birthday.bd_date).join(Birthday, isouter=True).all()]:
+        if name and birthday: 
+            #birthday_date = datetime.strptime(birthday, '%Y-%m-%d').date()
+            birthday_date = birthday
+            current_birthday = birthday_date.replace(year=current_date.year)
+            if current_date <= current_birthday <= current_date + timedelta_filter:
+                birthdays_dict[current_birthday].append(name)
+    return render_template('addressbooks_birthdays.html',  message= birthdays_dict, range_days=range_days)
 
 
 # @app.route("/login", methods=["POST", "GET"])
