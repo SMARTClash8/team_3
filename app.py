@@ -4,6 +4,7 @@ from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Addr
 from sqlalchemy import or_
 from forms import RecordForm#, LoginForm, RegisterForm
 from collections import defaultdict
+from new_parsing import get_wp_news
 
 app = Flask(__name__)
 app.debug = True
