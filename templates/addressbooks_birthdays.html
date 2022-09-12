@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8" >
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.classless.min.css">
+    <title>Presonal-helper</title>
+    </head>
+    <body>
+        <main class="container">
+            <h1 style="margin-bottom: 0px" align=center class="title">Result</h1>
+            <hr style="color:white; height: 4px; width: 500px; padding: 10px;">
+            <h5 style="margin-bottom: 30px" >Birthday in the next {{range_days}} days</h5>
+            <form method="POST">
+                <small>change birthday range (max 60 days)</small>
+                <input autocomplete="off" type="number" name="key" placeholder="Enter number of days" required min="1" max="60">
+                <button type="submit">Change</button>
+            </form>
+            <hr style="color:white; height: 4px; width: 500px; padding: 10px;">
+            <table style = "font-size: 20px">
+                <thead>
+                    <th scope="col">Birthday</th>
+                    <th scope="col">Name</th>
+                </thead>
+                <tbody>
+                    {% for date, names in message.items()%}
+                        <tr>
+                            <td>{{date}}</td>
+                            <td>{{', '.join(names)}}</td>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a style="width:100%" href="/addressbooks" role="button"> <-- Return </a>
+        </main>
+    </body>
+</html>
