@@ -22,6 +22,10 @@ def index():
     tags = db_session.query(Tag).all()
 
     return render_template("index.html", notes=notes, tags=tags)
+@app.route("/news", methods=["GET"], strict_slashes=False)
+def get_news():
+    news = get_wp_news()
+    return render_template("news.html", news=news)
 
 
 @app.route("/addressbooks", methods=["GET"], strict_slashes=False)
