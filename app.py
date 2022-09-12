@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
 from sqlalchemy import or_
 from forms import RecordForm#, LoginForm, RegisterForm
+from new_parsing import get_wp_news
 app = Flask(__name__)
 app.debug = True
 app.env = "development"
