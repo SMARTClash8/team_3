@@ -1,50 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Add note</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/" role="button"> Go back to the main page </a></li>
-        </ul>
-      </nav>
-      <form method="POST" action="/note">
-        <div style="padding: 10px">
-          <label
-            >Note name:
-            <input type="text" name="name" required />
-          </label>
-        </div>
-        <div style="padding: 10px">
-          <label
-            >Note description:
-            <input type="text" name="description" required />
-          </label>
-        </div>
-        <div style="padding: 10px">
-          <label
-            >Select tags:
-            <select name="tags" multiple="multiple" required>
-              {% for tag in tags %}
-              <option value="{{tag.name}}">{{tag.name}}</option>
-              {% endfor %}
-            </select>
-          </label>
-        </div>
-        <div class="grid">
-          <button type="reset" class="secondary">Reset</button>
-          <button type="submit">Submit</button>
-        </div>
-      </form>
-    </main>
-  </body>
-</html>
+
+
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}{{ super() }}{% endblock %}
+{% block jumbotron %}<h1>Just add new addressbook</h1>{% endblock %}
+{% block content %}
+    <a style="margin-bottom: 30px;" href="/notebook" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
+    <form method="POST" action="/note">
+      <div class="mb-3">
+        <label for="name" class="form-label" style="font-size: 24px">Note name:</label>
+        <input id="name" class="form-control form-control-lg" type="text" name="name" required placeholder="Enter note name"/>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label" style="font-size: 24px">Note description:</label>
+        <input id="description" class="form-control form-control-lg" type="text" name="description" required placeholder="Enter description"/>
+      </div>
+
+      <div class="mb-3">
+        <label for="tags" style="font-size: 24px" class="form-label">Select tags:</label>
+        <!-- <select id="tags" name="tags" class="form-select" multiple aria-label="multiple select tags" required>
+        <select class="form-select"></select> -->
+        <p><select class="form-select" style="width: 400px;" name="tags" id="tags" multiple multiple aria-label="multiple select tags">
+          <option disabled selected value> --All tags-- </option>
+          {% for tag in tags %}
+              <option value={{tag.id}}>{{tag.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary"><span class="bi bi-check-circle"></span>Submit</button>
+      <button type="reset" class="btn btn-danger"><span class="bi bi-x-circle"></span>Reset</button>
+    </form>
+{% endblock %}

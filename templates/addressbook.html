@@ -3,6 +3,7 @@
 {% block head %}{{ super() }}{% endblock %}
 {% block jumbotron %}<h1>Just add new addressbook</h1>{% endblock %}
 {% block content %}
+<a style="margin-bottom: 30px;" href="/addressbooks" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
     <form method="POST" action="/addressbook">
         <label style="font-size: 24px;" >Enter the book name:
           <input class="form-control form-control-lg" type="text" name="name" required />
