@@ -244,17 +244,16 @@ def search_in_notes():
                         Note.name.like(f'%{key}%'),
                         Tag.name.like(f'%{key}%'),
                         Note.description.like(f'%{key}%'))).all()
-        if key == 'Done' or 'done':
+                        
+        if key == 'Done':
             asc_table_res = db_session.query(Note).filter(Note.done == 1).all()
 
         for obj in asc_table_res:
-            res_note = db_session.query(Note).filter(Note.id == obj.id).first()
+            res_note = db_session.query(Note).filter(Note.id == obj.note).first()
             if res_note:
-               notes.append(res_note)
+                if not res_note in notes:
+                    notes.append(res_note)
 
-        
-        # res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
-        # return f"{res_notes}"
         return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
 
 
