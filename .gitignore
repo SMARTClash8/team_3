@@ -1,0 +1,4 @@
+venv
+myhelper.db
+requirements.txt
+__pycache__

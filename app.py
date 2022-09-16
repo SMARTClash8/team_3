@@ -1,13 +1,27 @@
 import datetime
-from flask import Flask, render_template, request, redirect, url_for
-from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
+from flask import Flask, render_template, request, redirect, url_for, flash
+from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
 from sqlalchemy import or_
-from forms import RecordForm#, LoginForm, RegisterForm
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from forms import LoginForm, RegistrationForm, RecordForm
+
+
 app = Flask(__name__)
 app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
+bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
+login_manager.login_message_category = "info"
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
     notes = db_session.query(Note).all()
@@ -19,6 +33,25 @@ def index():
     tags = db_session.query(Tag).all()
 
     return render_template("index.html", notes=notes, tags=tags)
+
+
+@app.route("/registration", methods=["GET", "POST"])
+def registration():
+    if current_user.is_authenticated:
+        return redirect(url_for("/"))
+    form = RegistrationForm()
+
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data). \
+            decode('utf-8')
+        user = User(username=form.username.data, email=form.email.data,
+                    password=hashed_password)
+        db_session.add(user)
+        db_session.commit()
+        flash('Account created!Please login', "success")
+        return render_template("success.html")
+        
+    return render_template("registration.html", title="Register", form=form)
 
 
 @app.route("/addressbooks", methods=["GET"], strict_slashes=False)
