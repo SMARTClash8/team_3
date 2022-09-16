@@ -1,48 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Organizer</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/note/" role="button">Add note</a></li>
-          <li><a href="/tag/" role="button">Add Tag</a></li>
-          <li><a href="/addressbooks" role="button">Switch to addressbooks</a></li>
-          <li><a href="/" role="button">Main Menu</a></li>
-        </ul>
-      </nav>
-      <blockquote>
-        "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-        Nam at dui sit amet ipsum cursus ornare."
-        <footer>
-          <cite>- Phasellus eget lacinia</cite>
-        </footer>
-      </blockquote>
-      <blockquote>
-        "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-        Nam at dui sit amet ipsum cursus ornare."
-        <footer>
-          <cite>- Phasellus eget lacinia</cite>
-        </footer>
-      </blockquote>
-      <blockquote>
-        "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-        Nam at dui sit amet ipsum cursus ornare."
-        <footer>
-          <cite>- Phasellus eget lacinia</cite>
-        </footer>
-      </blockquote>
- 
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}{{ super() }}{% endblock %}
+{% block jumbotron %}<h1>Just read latest news</h1>{% endblock %}
+{% block content %}
+{% for article in news%}
+  <blockquote>
+    "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
+    Nam at dui sit amet ipsum cursus ornare."
+    <footer>
+      <cite>- Phasellus eget lacinia</cite>
+    </footer>
+  </blockquote>
+  <blockquote>
+    "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
+    Nam at dui sit amet ipsum cursus ornare."
+    <footer>
+      <cite>- Phasellus eget lacinia</cite>
+    </footer>
+  </blockquote>
+  <blockquote>
+    "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
+    Nam at dui sit amet ipsum cursus ornare."
+    <b> {{article.name}}</b>
+    <br> {{article.description}}
 
-    </main>
-  </body>
-</html>
+    <footer>
+      <cite>- Phasellus eget lacinia</cite>
+      <cite>by {{article.author}},  {{article.source}}</cite>
+    </footer>
+  </blockquote>
+{% endfor %}
+{% endblock %}

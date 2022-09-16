@@ -29,6 +29,18 @@
           <button type="submit">Submit</button>
         </div>
       </form>
+      <div class="tags">
+        {% for tag in tags %}
+        <ul>
+          <li>
+            <div class="grid">
+              <p> {{tag}} </p>
+              <a href="/delete/tag/{{tag.id}}" role="button" class="contrast">Delete tag</a>
+            </div>
+          </li>
+        </ul>
+        {% endfor %}
+      </div>
     </main>
   </body>
 </html>

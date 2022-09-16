@@ -5,6 +5,8 @@ from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from forms import LoginForm, RegistrationForm, RecordForm
+from collections import defaultdict
+from new_parsing import get_wp_news
 
 
 app = Flask(__name__)
@@ -13,6 +15,8 @@ app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
+
+
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
@@ -21,18 +25,14 @@ login_manager.login_message_category = "info"
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
-    notes = db_session.query(Note).all()
+    return render_template("index_example.html")
 
-    if request.method == "POST":
-        id_tag = request.form.get("tag_choose")
-        if id_tag:
-            notes = db_session.query(Note).join(note_m2m_tag, isouter=True).join(Tag, isouter=True).filter(Tag.id == id_tag).all()
-    tags = db_session.query(Tag).all()
-
-    return render_template("index.html", notes=notes, tags=tags)
+@app.route("/news", methods=["GET"], strict_slashes=False)
+def get_news():
+    news = get_wp_news()
+    return render_template("news.html", news=news)
 
 
 @app.route("/registration", methods=["GET", "POST"])
@@ -181,8 +181,34 @@ def delete_record_info(record_id, book_id):
     return redirect(url_for("get_record_info", book_id=book_id, record_id=record_id))
 
 
-@app.route("/detail/<id>", strict_slashes=False)
+@app.route("/detail/<id>", methods=["GET", "POST"], strict_slashes=False)
 def detail(id):
+    if request.method == "POST":
+        note_to_change = db_session.query(Note).filter(Note.id==id).first()
+
+        name = request.form.get("name")
+        if name:
+            note_to_change.name = name
+
+        description = request.form.get("description")
+        if description:
+            note_to_change.description = description
+        
+        tags = request.form.get("tags")
+        if tags:
+            pass
+            # db.session.query(Address).filter(Address.contact_id == id).update({"addr": address}, synchronize_session="fetch")
+            # if not cont.address:
+            #     cont.address = [Address(addr=address, contact_id=id)]
+
+        db_session.add(note_to_change)
+        db_session.commit()
+        
+        notes = db_session.query(Note).all()
+        tags = db_session.query(Tag).all()
+
+        return render_template("notebook.html", notes=notes, tags=tags)
+
     note = db_session.query(Note).filter(Note.id == id).first()
     return render_template("detail.html", note=note)
 
@@ -213,9 +239,10 @@ def add_tag():
         tag = Tag(name=name)
         db_session.add(tag)
         db_session.commit()
-        return redirect("/")
+        return redirect(f"/tag")
 
-    return render_template("tag.html")
+    tags = db_session.query(Tag).all()
+    return render_template("tag.html", tags=tags)
 
 
 @app.route("/delete/<id>", strict_slashes=False)
@@ -223,7 +250,7 @@ def delete(id):
     db_session.query(Note).filter(Note.id == id).delete()
     db_session.commit()
 
-    return redirect("/")
+    return redirect("/notebook")
 
 
 @app.route("/done/<id>", strict_slashes=False)
@@ -231,12 +258,14 @@ def done(id):
     db_session.query(Note).filter(Note.id == id).first().done = True
     db_session.commit()
 
-    return redirect("/")
+    return redirect("/notebook")
 
 
 @app.route("/note/result", methods=["GET", "POST"], strict_slashes=False)
 def search_in_notes():
+
     if request.method == "POST":
+        notes = []
         key= request.form.get("key")
         asc_table_res = db_session.query(note_m2m_tag).\
                     join(Note, isouter=True).\
@@ -245,10 +274,60 @@ def search_in_notes():
                         Note.name.like(f'%{key}%'),
                         Tag.name.like(f'%{key}%'),
                         Note.description.like(f'%{key}%'))).all()
-        res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
-        return render_template("note_result.html", notes=res_notes, key=key, count_res=len(res_notes))
+
+        for obj in asc_table_res:
+            res_note = db_session.query(Note).filter(Note.id == obj.id).first()
+            if res_note:
+               notes.append(res_note)
+
+        #res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
+        return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
 
 
+@app.route("/delete/tag/<id>", strict_slashes=False)
+def delete_tag(id):
+    db_session.query(Tag).filter(Tag.id == id).delete()
+    db_session.commit()
+
+    return redirect("/tag")
+
+
+@app.route("/addressbooks/birthdays", methods=["GET", "POST"], strict_slashes=False)
+def coming_birthday():
+    range_days = 7
+
+    if request.method == "POST":
+        inp_brth = request.form.get("key")
+        if inp_brth: 
+            range_days = int(inp_brth)
+
+    birthdays_dict = defaultdict(list)
+    current_date = datetime.datetime.now().date()
+    timedelta_filter = datetime.timedelta(days=range_days)
+
+    for name, birthday in [i for i in db_session.query(Record.name, Birthday.bd_date).join(Birthday, isouter=True).all()]:
+        if name and birthday: 
+            #birthday_date = datetime.strptime(birthday, '%Y-%m-%d').date()
+            birthday_date = birthday
+            current_birthday = birthday_date.replace(year=current_date.year)
+            if current_date <= current_birthday <= current_date + timedelta_filter:
+                birthdays_dict[current_birthday].append(name)
+                
+    return render_template('addressbooks_birthdays.html',  message= birthdays_dict, range_days=range_days)
+
+
+@app.route("/notebook", methods=["GET", "POST"], strict_slashes=False)
+def notebook():
+    notes = db_session.query(Note).all()
+
+    if request.method == "POST":
+        id_tag = request.form.get("tag_ch")
+        if id_tag:
+            notes = db_session.query(Note).join(note_m2m_tag, isouter=True).join(Tag, isouter=True).filter(Tag.id == id_tag).all()
+    
+    tags = db_session.query(Tag).all()
+
+    return render_template("notebook.html", notes=notes, tags=tags)
 # @app.route("/login", methods=["POST", "GET"])
 # def login():
 
