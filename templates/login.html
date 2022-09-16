@@ -1,47 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Organizer</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/" role="button">Main Menu</a></li>
-        </ul>
-      </nav>
-      <form>
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block jumbotron %}<h1>Please, enter your info</h1>{% endblock %}
+{% block content %}
+<form action="", method="post">
+  {{ form.hidden_tag() }}
+  
+  {% with messages = get_flashed_messages()%}
+        {% if messages %}
+      </div>
+      <div class="alert alert-danger" role="alert">
+        {{ messages[0] }}
+      </div>
+      
+        {% endif %}
+        {% endwith %}
+  <!-- Email input -->
 
-        <div class="grid">
-      
-          <label for="firstname">
-            First name
-            <input type="text" id="firstname" name="firstname" placeholder="First name" required>
-          </label>
-      
-          <label for="lastname">
-            Last name
-            <input type="text" id="lastname" name="lastname" placeholder="Last name" required>
-          </label>
-      
-        </div>
-      
-        <label for="email">Email address</label>
-        <input type="email" id="email" name="email" placeholder="Email address" required>
-        <small>We'll never share your email with anyone else.</small>
-      
-        <button type="submit">Submit</button>
-      
-      </form>
- 
+  <div class="form-outline mb-4">
+    {% if not form.email.errors %}
+            {{ form.email.label(**{"class": "form-label", "for":"form2Example1"}) }}
+            {{ form.email(**{"type":"email", "id": "form2Example1", "class": "form-control"}) }}
+          {% else %}
+            {{ form.email.label(**{"class": "form-label", "for":"form2Example1"}) }}
+            {{ form.email(**{"type":"email", "id": "form2Example1", "class": "form-control"}) }}
+            {% for error in form.email.errors %}
+            <span style="color: red;">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+  </div>
 
-    </main>
-  </body>
-</html>
+  <!-- Password input -->
+
+  <div class="form-outline mb-4">
+    {% if not form.password.errors %}
+            {{ form.password.label(**{"class": "form-label", "for":"form2Example2"}) }}
+            {{ form.password(**{"type":"password", "id": "form2Example1", "class": "form-control"}) }}
+          {% else %}
+            {{ form.password.label(**{"class": "form-label", "for":"form2Example2"}) }}
+            {{ form.password(**{"type":"password", "id": "form2Example2", "class": "form-control"})}}
+            {% for error in form.password.errors %}
+            <span style="color: red;">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+    
+  </div>
+  <div class="row mb-4">
+    <div class="col d-flex justify-content-center">
+      <!-- Checkbox -->
+      <div class="form-check">
+        {{ form.remember.label(**{"class":"form-check-label",  "for": "form2Example31", "checked": true})}}
+        {{ form.remember(**{"class":"form-check-input",  "id": "form2Example31", "checked": true})}}
+      
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Submit button -->
+  {{ form.submit(type="submit", class="btn btn-primary btn-block mb-4") }}
+
+  <!-- Register buttons -->
+  <div class="text-center">
+    <p>Not a member? <a href="/registration">Register</a></p>
+
+  </div>
+  <!-- Submit button -->
+  <!-- <div class="mb-3">
+    {{ form.submit(type="submit", class="btn btn-primary") }}
+  </div> -->
+
+  </div>
+</form>
+
+{% endblock %}

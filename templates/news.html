@@ -5,27 +5,10 @@
 {% block content %}
 {% for article in news%}
   <blockquote>
-    "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-    Nam at dui sit amet ipsum cursus ornare."
-    <footer>
-      <cite>- Phasellus eget lacinia</cite>
-    </footer>
-  </blockquote>
-  <blockquote>
-    "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-    Nam at dui sit amet ipsum cursus ornare."
-    <footer>
-      <cite>- Phasellus eget lacinia</cite>
-    </footer>
-  </blockquote>
-  <blockquote>
-    "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non. 
-    Nam at dui sit amet ipsum cursus ornare."
     <b> {{article.name}}</b>
     <br> {{article.description}}
 
     <footer>
-      <cite>- Phasellus eget lacinia</cite>
       <cite>by {{article.author}},  {{article.source}}</cite>
     </footer>
   </blockquote>

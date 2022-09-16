@@ -21,9 +21,10 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
 login_manager.login_message_category = "info"
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db_session.query(User).get(int(user_id))
 
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
@@ -38,7 +39,7 @@ def get_news():
 @app.route("/registration", methods=["GET", "POST"])
 def registration():
     if current_user.is_authenticated:
-        return redirect(url_for("/"))
+        return redirect(url_for("index"))
     form = RegistrationForm()
 
     if form.validate_on_submit():
@@ -53,20 +54,49 @@ def registration():
         
     return render_template("registration.html", title="Register", form=form)
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        print("authenticated")
+        return redirect(url_for("index"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = db_session.query(User).filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password,
+                                               form.password.data):
+            login_user(user, remember=form.remember.data)
+            # next_page = request.args.get("next")
+            flash("You have been logged in!", "success")
+            return redirect(url_for("index"))
+        else:
+
+            flash("Login Unsuccessful. Please check email and password",
+                  "danger")
+
+    return render_template("login.html", title="Login", form=form)
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
 
 @app.route("/addressbooks", methods=["GET"], strict_slashes=False)
 def get_addressbooks():
 
-    address_books = db_session.query(Address_book).all()
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    address_books = user.addressbooks
     return render_template("address_books.html", address_books=address_books)
 
 
 @app.route("/addressbook/", methods=["GET", "POST"], strict_slashes=False)
+@login_required
 def create_addressbook():
-    
+
     if request.method == "POST":
         name = request.form.get("name")
         adbook = Address_book(name=name)
+        user = db_session.query(User).filter_by(id=current_user.id).first()
+        user.addressbooks.append(adbook)
         db_session.add(adbook)
         db_session.commit()
         return redirect("/addressbooks")
@@ -215,6 +245,8 @@ def detail(id):
 
 @app.route("/note/", methods=["GET", "POST"], strict_slashes=False)
 def add_note():
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+
     if request.method == "POST":
         name = request.form.get("name")
         description = request.form.get("description")
@@ -223,11 +255,15 @@ def add_note():
         for tag in tags:
             tags_obj.append(db_session.query(Tag).filter(Tag.name == tag).first())
         note = Note(name=name, description=description, tags=tags_obj)
+
+        user.notes.append(note)
+
         db_session.add(note)
         db_session.commit()
         return redirect("/")
     else:
-        tags = db_session.query(Tag).all()
+        tags = user.tags
+        # tags = db_session.query(Tag).all()
 
     return render_template("note.html", tags=tags)
 
@@ -237,6 +273,10 @@ def add_tag():
     if request.method == "POST":
         name = request.form.get("name")
         tag = Tag(name=name)
+
+        user = db_session.query(User).filter_by(id=current_user.id).first()
+        user.tags.append(tag)
+
         db_session.add(tag)
         db_session.commit()
         return redirect(f"/tag")
@@ -318,46 +358,17 @@ def coming_birthday():
 
 @app.route("/notebook", methods=["GET", "POST"], strict_slashes=False)
 def notebook():
-    notes = db_session.query(Note).all()
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    notes = user.notes
 
     if request.method == "POST":
         id_tag = request.form.get("tag_ch")
         if id_tag:
             notes = db_session.query(Note).join(note_m2m_tag, isouter=True).join(Tag, isouter=True).filter(Tag.id == id_tag).all()
     
-    tags = db_session.query(Tag).all()
+    tags = user.tags
 
     return render_template("notebook.html", notes=notes, tags=tags)
-# @app.route("/login", methods=["POST", "GET"])
-# def login():
-
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         user = dbase.getUserByEmail(form.email.data)
-#         if user and check_password_hash(user['psw'], form.psw.data):
-#             userlogin = UserLogin().create(user)
-#             rm = form.remember.data
-#             login_user(userlogin, remember=rm)
-#             return redirect(request.args.get("next") or url_for("profile"))
-
-#         flash("Неверная пара логин/пароль", "error")
-
-#     return render_template("login_test.html", menu=dbase.getMenu(), title="Авторизация", form=form)
-
-
-# @app.route("/register", methods=["POST", "GET"])
-# def register():
-#     form = RegisterForm()
-#     if form.validate_on_submit():
-#             hash = generate_password_hash(request.form['psw'])
-#             res = dbase.addUser(form.name.data, form.email.data, hash)
-#             if res:
-#                 flash("Вы успешно зарегистрированы", "success")
-#                 return redirect(url_for('login'))
-#             else:
-#                 flash("Ошибка при добавлении в БД", "error")
-
-#     return render_template("register.html", menu=dbase.getMenu(), title="Регистрация", form=form)
 
 if __name__ == "__main__":
     app.run()
