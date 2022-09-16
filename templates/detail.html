@@ -10,7 +10,8 @@
     </style>
 {% endblock %}
 {% block jumbotron %}<h1>Simple editing notes</h1>{% endblock %}
-{% block content %} 
+{% block content %}
+<a style="margin-bottom: 30px;" href="/notebook" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
 <form id="contact-form" method="POST" action="/detail/{{note.id}}">
     <table class="table table-striped">
         <thead>

@@ -3,13 +3,17 @@
 {% block head %}
     {{ super() }}
 {% endblock %}
-{% block jumbotron %}<h1>Just add new contact</h1>{% endblock %}
+{% block jumbotron %}<h1>Just add new notes</h1>{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-lg-6" >
             <a href="/note/" class="btn btn-primary" role="button">
                 <span class="bi bi-plus-circle"></span>
                 Add new note
+            </a>
+            <a href="/tag/" class="btn btn-primary" role="button">
+                <span class="bi bi-plus-circle"></span>
+                Add tags
             </a>
         </div>
         <div class="col-lg-6">
@@ -34,7 +38,7 @@
             </div>
         </div>
     </div>
-
+    <h6 align="right" style="margin-top:0px;">*Use "Done" to filter completed notes &nbsp&nbsp&nbsp&nbsp</h6>
     <table class="table table-striped">
         <thead>
         <tr>
