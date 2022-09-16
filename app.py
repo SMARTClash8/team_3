@@ -187,14 +187,14 @@ def add_note():
     if request.method == "POST":
         name = request.form.get("name")
         description = request.form.get("description")
-        tags = request.form.getlist("tags")
+        tags_id= request.form.getlist("tags")
         tags_obj = []
-        for tag in tags:
-            tags_obj.append(db_session.query(Tag).filter(Tag.name == tag).first())
+        for tag_id in tags_id:
+            tags_obj.append(db_session.query(Tag).filter(Tag.id == tag_id).first())
         note = Note(name=name, description=description, tags=tags_obj)
         db_session.add(note)
         db_session.commit()
-        return redirect("/")
+        return redirect("/notebook")
     else:
         tags = db_session.query(Tag).all()
 
@@ -236,6 +236,7 @@ def search_in_notes():
     if request.method == "POST":
         notes = []
         key= request.form.get("key")
+        
         asc_table_res = db_session.query(note_m2m_tag).\
                     join(Note, isouter=True).\
                     join(Tag, isouter=True).\
@@ -243,13 +244,16 @@ def search_in_notes():
                         Note.name.like(f'%{key}%'),
                         Tag.name.like(f'%{key}%'),
                         Note.description.like(f'%{key}%'))).all()
+                        
+        if key == 'Done':
+            asc_table_res = db_session.query(Note).filter(Note.done == 1).all()
 
         for obj in asc_table_res:
-            res_note = db_session.query(Note).filter(Note.id == obj.id).first()
+            res_note = db_session.query(Note).filter(Note.id == obj.note).first()
             if res_note:
-               notes.append(res_note)
+                if not res_note in notes:
+                    notes.append(res_note)
 
-        #res_notes = [db_session.query(Note).filter(Note.id == obj.id).first() for obj in asc_table_res]#temp code. add rel. to m2m table (example -  https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html)
         return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
 
 
@@ -263,7 +267,7 @@ def delete_tag(id):
 
 @app.route("/addressbooks/birthdays", methods=["GET", "POST"], strict_slashes=False)
 def coming_birthday():
-    range_days = 7
+    range_days = 60
 
     if request.method == "POST":
         inp_brth = request.form.get("key")
