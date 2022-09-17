@@ -38,6 +38,9 @@
           <span {{record.phones}} class="outline">
             <a href="/delete/{{ book_id }}/{{record.id}}?name=phone&id={{phone.name}}" role="button" class="contrast"
             >Delete record</a
+          <span {{record.phones}} class="outline">
+            <a href="/add_record/{{ book_id }}/{{record.id}}?name=phone&id={{phone.name}}" role="button" class="contrast"
+            >Change record</a
 
           </li>
           {% endfor %}
@@ -56,7 +59,6 @@
             <span {{record.phones}} class="outline">
               <a href="/delete/{{ book_id }}/{{record.id}}?name=email&id={{email.name}}" role="button" class="contrast"
               >Delete record</a
-
             </li>
             {% endfor %}
             </ol>

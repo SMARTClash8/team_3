@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block jumbotron %}<h1>Find out</h1>{% endblock %}
+{% block content %}
+    <a style="margin-bottom: 30px;" href="/notebook" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
+    <div class="row">
+        <div class="col-lg-6" >
+          <h3 style="margin-bottom: 20px" class="title">Number of matches: {{count_res}}</h3>
+            
+        </div>
+        <div class="col-lg-6">
+            <h3 style="margin-bottom: 20px" class="title">Search word: "{{key}}"</h3>
+        </div>
+    </div>
+    <hr align=center  style="margin-top: 5px;">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <!-- <th>Status</th> -->
+            <!-- <th>Desription</th> -->
+            <th>Tags</th>
+            <th>Created date</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for note in notes %}
+                <tr>
+                    {%if not note.done%}
+                    <th><a href="/detail/{{note.id}}" class="btn btn-primary" role="button">{{note.name}}</a></th>
+                    <th>{{ note.tags|join(', ', attribute='name') }}</th>
+                    <th><kbd>{{note.created.date()}}</kbd></th>
+                    <th>
+                        <a href="/done/{{note.id}}" class="btn btn-success" role="button"><span class="bi bi-check-circle"></span>Done</a>
+                        <a href="/delete/{{note.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash"></span>Delete</a>
+                    </th>
+                    {% else %}
+                    <th><a href="/detail/{{note.id}}" class="btn btn-success" role="button"><s>{{note.name}}</s></a></th>
+                    <th><s>{{ note.tags|join(', ', attribute='name') }}</s></th>
+                    <th><kbd><s>{{note.created.date()}}</s></kbd></th>
+                    <th><a href="/delete/{{note.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash">Delete</a></th>
+                    {% endif %} 
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

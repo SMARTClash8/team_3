@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registration</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <nav
+        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
+      >
+        <ul>
+          <li><a href="/" role="button">Main Menu</a></li>
+        </ul>
+      </nav>
+    <form method="POST" action="/registration">
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      {% for message in messages %}
+      
+      <span style="color: green;">{{ message }}</span>
+      {% endfor%}
+      {% endif %}
+      {% endwith %}
+      {{ form.hidden_tag() }}
+
+      <!-- Grid -->
+      <!-- <div class="grid"> -->
+        <ul>
+
+          {% if not form.username.errors %}
+            {{ form.username.label }}
+            {{ form.username }}
+        {% else %}
+            {{ form.username.label }}
+            {{ form.username(**{"aria-invalid": "true"})}}
+        
+            {% for error in form.password.errors %}
+            <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+
+
+          {% if not form.email.errors %}
+            {{ form.email.label }}
+            {{ form.email }}
+          {% else %}
+            {{ form.email.label }}
+            {{ form.email(**{"aria-invalid": "true"})}}
+            {% for error in form.email.errors %}
+            <span style="color: red;">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+
+
+        {% if not form.password.errors %}
+            {{ form.password.label }}
+            {{ form.password }}
+        {% else %}
+            {{ form.password.label }}
+            {{ form.password(**{"aria-invalid": "true"})}}
+        
+            {% for error in form.password.errors %}
+            <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+
+
+      {% if not form.confirm_password.errors %}
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password }}
+        {% else %}
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password(**{"aria-invalid": "true"})}}
+        
+            {% for error in form.confirm_password.errors %}
+            <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+       
+        <!-- <p>{{ form.submit(type="submit") }} <br></p> -->
+      </ul>
+      <!-- Button -->
+      <p>{{ form.submit(type="submit") }} </p>
+
+    </form>
+    </main>
+  </body>
+</html>

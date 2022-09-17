@@ -1,36 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Organizer</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/addressbook/" role="button">Create a new book</a></li>
-          <li><a href="/" role="button">Main Menu</a></li>
-        </ul> 
-      </nav>
-
-      {% for ab in address_books%}
-      <ul>
-        <li>
-          <a href="/records/{{ab.id}}" role="button" class="secondary"
-            > ID: {{ab.id}} Name: {{ab.name}}</a
-          >
-          <span {{ab.name}} class="outline">
-          <a href="/delete/addressbook/{{ab.id}}" role="button" class="contrast"
-            >Delete addressbook</a
-        </li>
-      </ul>
-      {% endfor %}
-    </main>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}{{ super() }}{% endblock %}
+{% block jumbotron %}<h1>Just add new book</h1>{% endblock %}
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h2>Choose addressbook or <a href="/addressbook/" class="btn btn-primary" role="button"><span class="bi bi-plus-circle"></span>Create a new</a>:</h2>
+      <hr align=left width="470px" style="margin-top: 5px;">
+        {% for ab in address_books%}
+          <!-- <button  type="button" class="btn">Basic</button> -->
+              <p><div class="btn-group btn-group-lg" align="center">
+                <a href="/records/{{ab.id}}" class="btn btn-success" role="button">{{ab.name}}</a>
+              <!-- <a href="/records/{{ab.id}}" role="button" class="secondary">Name: {{ab.name}}</a> -->
+              <!-- <span {{ab.name}} class="outline"> -->
+                <a href="/delete/addressbook/{{ab.id}}" class="btn btn-danger" role="button" class="contrast"><span class="bi bi-trash"></span>Delete</a>
+              </div>
+        {% endfor %}
+    </div>
+  </div>
+  
+{% endblock %}

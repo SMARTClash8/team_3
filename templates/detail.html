@@ -1,32 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Note information</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/" role="button"> Go back to the main page </a></li>
-        </ul>
-      </nav>
-      <h1>{{note.name}}</h1>
-      <p>Description: <b>{{note.description}}</b></p>
-      <p>Time of creation: <kbd>{{note.created.date()}}</kbd></p>
-      {% if note.done %}
-      <p>Status: <ins>Completed</ins></p>
-      {% else %}
-      <p>Status: <i>Not implemented</i></p>
-      {% endif %}
-
-      <p>Tags: <small> {{ note.tags|join(', ', attribute='name') }} </small></p>
-    </main>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style>
+      table input[type="text"] {background-color:none}
+      table input[type="text"]:read-only {border: none}
+      #save {display: none}
+      input[type="button"]{font-size: 16px; width: 70px}
+    </style>
+{% endblock %}
+{% block jumbotron %}<h1>Simple editing notes</h1>{% endblock %}
+{% block content %}
+<a style="margin-bottom: 30px;" href="/notebook" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
+<form id="contact-form" method="POST" action="/detail/{{note.id}}">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Desription</th>
+            <th>Tags</th>
+            <th>Created date</th>
+        </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{note.name}}" readonly /></th>
+                    <th style="width: 110px">
+                        {% if note.done %}
+                        <p><ins>Completed</ins></p>
+                        {% else %}
+                        <p><i>Not implemented</i></p>
+                        {% endif %}
+                    </th>
+                    <th id="description_table"><p id="description" name="description" value="{{note.description}}">{{note.description}}</p></th>
+                    <!-- <th style="width: 110px">{{ note.tags|join(', ', attribute='name') }}</th> -->
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{ note.tags|join(', ', attribute='name') }}" readonly /></th>
+                    <th style="width: 110px"><kbd>{{note.created.date()}}</kbd></th>
+                </tr>
+        </tbody>
+    </table>
+    <input class="btn btn-primary" type="button" id="edit" value="Edit" />
+    <!-- <button type="submit" id="save">Save</button> -->
+    <input class="btn btn-success" type="button" id="save" value="Save" />
+  </form>
+  
+  <script>
+    document.getElementById("edit").addEventListener("click", function() {
+      var fields = document.querySelectorAll("table input[type='text']");
+      for (var i = 0; i < fields.length; i++) {
+        fields[i].readOnly = false;
+      };
+      const cus_input = document.createElement("input");
+      cus_input.type = "text";
+      cus_input.name = "description";
+      cus_input.id = "description";
+      cus_input.style.width = "600px";
+      cus_input.style.hight = "00px";
+      cus_input.value = document.getElementById("description").textContent;
+      const descript = document.getElementById("description");
+      descript.style.display = "none"
+      document.getElementById("description_table").appendChild(cus_input)
+ 
+      document.getElementById("save").style.display = "inline-block";
+      
+    }, {once : true});
+    
+    document.getElementById("save").addEventListener("click", function() {
+      
+      document.getElementById("contact-form").submit();
+      // window.location.replace("/notebook")
+      // location.reload();
+    
+      var fields = document.querySelectorAll("table input[type='text']");
+      for (var i = 0; i < fields.length; i++) {
+        fields[i].readOnly = true;
+      }
+    
+      document.getElementById("save").style.display = "none";
+    });
+    </script>  
+{% endblock %}
