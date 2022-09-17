@@ -152,6 +152,7 @@ def delete_record_info(record_id, book_id):
 
 @app.route("/detail/<id>", methods=["GET", "POST"], strict_slashes=False)
 def detail(id):
+    tags = db_session.query(Tag).all()
     if request.method == "POST":
         note_to_change = db_session.query(Note).filter(Note.id==id).first()
 
@@ -163,9 +164,13 @@ def detail(id):
         if description:
             note_to_change.description = description
         
-        tags = request.form.get("tags")
-        if tags:
-            pass
+        tags_id_list = request.form.getlist("tag_ch")
+        if tags_id_list:
+            tags_obj = []
+            for tag_id in tags_id_list:
+                tags_obj.append(db_session.query(Tag).filter(Tag.id == tag_id).first())
+            # return f"{[i.name for i in tags_obj]}"
+            note_to_change.tags = tags_obj
             # db.session.query(Address).filter(Address.contact_id == id).update({"addr": address}, synchronize_session="fetch")
             # if not cont.address:
             #     cont.address = [Address(addr=address, contact_id=id)]
@@ -179,7 +184,7 @@ def detail(id):
         return render_template("notebook.html", notes=notes, tags=tags)
 
     note = db_session.query(Note).filter(Note.id == id).first()
-    return render_template("detail.html", note=note)
+    return render_template("detail.html", note=note, tags=tags)
 
 
 @app.route("/note/", methods=["GET", "POST"], strict_slashes=False)
@@ -216,6 +221,9 @@ def add_tag():
 
 @app.route("/delete/<id>", strict_slashes=False)
 def delete(id):
+    # m2m_id = db_session.query(note_m2m_tag).join(Note, isouter=True).filter(Note.id == id).all()
+    # for obj in m2m_id:
+    #     db_session.query(note_m2m_tag).filter(note_m2m_tag == obj).delete()
     db_session.query(Note).filter(Note.id == id).delete()
     db_session.commit()
 
@@ -246,7 +254,8 @@ def search_in_notes():
                         Note.description.like(f'%{key}%'))).all()
                         
         if key == 'Done':
-            asc_table_res = db_session.query(Note).filter(Note.done == 1).all()
+            notes = db_session.query(Note).filter(Note.done == 1).all()
+            return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
 
         for obj in asc_table_res:
             res_note = db_session.query(Note).filter(Note.id == obj.note).first()
