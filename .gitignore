@@ -1,5 +1,5 @@
 venv
 myhelper.db
-*.db
+*.db*
 requirements.txt
 __pycache__
