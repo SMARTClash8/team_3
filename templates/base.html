@@ -20,6 +20,9 @@
         <div class="container">
             <div class="jumbotron text-center" style="margin-bottom:0">
                 {% block jumbotron %}<h1>Personal helper</h1>{% endblock %}
+                {% if current_user.is_authenticated %}
+                <h2> {{ current_user.username }} </h2>
+                {% endif %}
             </div>
             
             <nav>

@@ -270,18 +270,20 @@ def add_note():
 
 @app.route("/tag/", methods=["GET", "POST"], strict_slashes=False)
 def add_tag():
+
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+
     if request.method == "POST":
         name = request.form.get("name")
         tag = Tag(name=name)
 
-        user = db_session.query(User).filter_by(id=current_user.id).first()
         user.tags.append(tag)
 
         db_session.add(tag)
         db_session.commit()
         return redirect(f"/tag")
 
-    tags = db_session.query(Tag).all()
+    tags = user.tags
     return render_template("tag.html", tags=tags)
 
 
