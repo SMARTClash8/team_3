@@ -1,6 +1,6 @@
-from flask_login import UserMixin
-from datetime import datetime
 
+from datetime import datetime
+from enum import unique
 
 from sqlalchemy import Column, Integer, String, Boolean, Date
 from sqlalchemy.orm import relationship
@@ -8,7 +8,6 @@ from sqlalchemy.sql.schema import ForeignKey, Table, MetaData
 from sqlalchemy.sql.sqltypes import DateTime
 
 from db import Base, engine, db_session
-
 
 # таблица для связи many2many
 
@@ -19,35 +18,6 @@ note_m2m_tag = Table(
     Column("note", Integer, ForeignKey("notes.id")),
     Column("tag", Integer, ForeignKey("tags.id")),
 )
-
-notes_user = Table(
-    "notes_user",
-    Base.metadata,
-    Column("user_id", Integer, ForeignKey("user.id")),
-    Column("note_id", Integer, ForeignKey("notes.id")))
-
-adbooks_user = Table(
-    "adbook_user",
-    Base.metadata,
-    Column("user_id", Integer, ForeignKey("user.id")),
-    Column("addressbook_id", Integer, ForeignKey("addressbook.id")))
-
-tags_user = Table(
-    "tags_user",
-    Base.metadata,
-    Column("user_id", Integer, ForeignKey("user.id")),
-    Column("tag_id", Integer, ForeignKey("tags.id")))
-
-class User(Base, UserMixin):
-
-    __tablename__ = "user"
-    id = Column(Integer, primary_key=True)
-    username = Column(String(100), unique=True, nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    password = Column(String(60), nullable=False)
-    addressbooks = relationship("Address_book", secondary=adbooks_user, backref="user")
-    notes = relationship("Note", secondary=notes_user, backref="user")
-    tags = relationship("Tag", secondary=tags_user, backref="user")
 
 
 class Note(Base):

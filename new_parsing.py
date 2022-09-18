@@ -17,5 +17,7 @@ def get_wp_news():
             "author": story.find_all("a", attrs={'class': ["wpds-c-knSWeD", "wpds-c-knSWeD-iRfhkg-as-a"]})[0].text,
             "source": "Washington Post"
         }
-        articles.append(article)
+        if article not in articles:
+            articles.append(article)
+    articles = articles[:5]
     return articles

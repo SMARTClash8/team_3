@@ -1,37 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Organizer</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/record/{{ book_id }}" role="button">Create a new record for {{ book_id }}</a></li>
-          <li><a href="/addressbooks" role="button">Go back to Addressbooks </a></li>
-          <li><a href="/" role="button">Main Menu</a></li>
-        </ul> 
-      </nav>
-
-      {% for record in records %}
-      <ul>
-        <li>
-          <a href="/record/{{book_id}}/{{record.id}}" role="button" class="secondary"
-            > ID: {{record.id}} Name: {{record.name}}</a
-          >
-          <span {{record.name}} class="outline">
-          <a href="/deleterecord/{{book_id}}/{{record.id}}" role="button" class="contrast"
-            >Delete record</a
-        </li>
-      </ul>
-      {% endfor %}
-    </main>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block jumbotron %}<h1>Just add new notes</h1>{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-lg-6">
+            <a href="/record/{{ book_id }}" class="btn btn-primary" role="button">
+                <span class="bi bi-plus-circle"></span>
+                Add new record
+            </a>
+        </div>
+        <div class="col-lg-6">
+            <div class="col-lg-6" align="right">
+                <form method="POST" action="/record/result/{{ book_id }}">
+                    <input type="search" name="key" placeholder="Search" required>
+                    <button type="submit"><span class="bi bi-search"></span> Search</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                    <th><a href="/detailrecord/{{book_id}}/{{record.id}}" class="btn btn-primary" role="button">{{record.id}}</a></th>
+                    <th>{{ record.name }}</th>
+                    <th>
+                        <a href="/deleterecord/{{ book_id }}/{{record.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash"></span>Delete</a>
+                    </th>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endblock %}
