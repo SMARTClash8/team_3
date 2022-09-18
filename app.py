@@ -1,8 +1,10 @@
 import datetime
-from flask import Flask, render_template, request, redirect, url_for
-from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
+from flask import Flask, render_template, request, redirect, url_for, flash
+from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
 from sqlalchemy import or_
-from forms import RecordForm#, LoginForm, RegisterForm
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from forms import LoginForm, RegistrationForm, RecordForm
 from collections import defaultdict
 from new_parsing import get_wp_news
 
@@ -11,7 +13,18 @@ app = Flask(__name__)
 app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
+bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
+
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
+login_manager.login_message_category = "info"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db_session.query(User).get(int(user_id))
 
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
@@ -23,19 +36,67 @@ def get_news():
     return render_template("news.html", news=news)
 
 
+@app.route("/registration", methods=["GET", "POST"])
+def registration():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = RegistrationForm()
+
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data). \
+            decode('utf-8')
+        user = User(username=form.username.data, email=form.email.data,
+                    password=hashed_password)
+        db_session.add(user)
+        db_session.commit()
+        flash('Account created!Please login', "success")
+        return render_template("success.html")
+        
+    return render_template("registration.html", title="Register", form=form)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        print("authenticated")
+        return redirect(url_for("index"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = db_session.query(User).filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password,
+                                               form.password.data):
+            login_user(user, remember=form.remember.data)
+            # next_page = request.args.get("next")
+            flash("You have been logged in!", "success")
+            return redirect(url_for("index"))
+        else:
+
+            flash("Login Unsuccessful. Please check email and password",
+                  "danger")
+
+    return render_template("login.html", title="Login", form=form)
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+
 @app.route("/addressbooks", methods=["GET"], strict_slashes=False)
 def get_addressbooks():
 
-    address_books = db_session.query(Address_book).all()
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    address_books = user.addressbooks
     return render_template("address_books.html", address_books=address_books)
 
 
 @app.route("/addressbook/", methods=["GET", "POST"], strict_slashes=False)
+@login_required
 def create_addressbook():
-    
+
     if request.method == "POST":
         name = request.form.get("name")
         adbook = Address_book(name=name)
+        user = db_session.query(User).filter_by(id=current_user.id).first()
+        user.addressbooks.append(adbook)
         db_session.add(adbook)
         db_session.commit()
         return redirect("/addressbooks")
@@ -43,11 +104,58 @@ def create_addressbook():
     return render_template("addressbook.html")
 
 
+@app.route("/record/result/<book_id>", methods=["GET", "POST"], strict_slashes=False)
+def search_in_record(book_id):
+
+    if request.method == "POST":
+        recorded = []
+        key = request.form.get("key")
+        records = db_session.query(Record).filter(or_(Record.name.like(f'%{key}%'),Record.id.like(f'%{key}%'))).all()
+        for obj in records:
+            res_note = db_session.query(Record).filter(Record.id == obj.id).first()
+            if res_note:
+                if not res_note in recorded:
+                    recorded.append(res_note)
+
+
+        return render_template("record_result.html", recorded=recorded, book_id=book_id, key=key, count_res=1)
+
 @app.route("/records/<book_id>", methods=["GET"], strict_slashes=False)
 def get_records(book_id):
 
     records = db_session.query(Record).filter(Record.book_id == book_id).all()
     return render_template("records.html", records=records, book_id=book_id)
+
+
+@app.route("/detailrecord/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
+def detailrecord(book_id, record_id):
+    if request.method == "POST":
+        record_to_change = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
+        form = RecordForm()
+        name = form.name.data
+        bd_str_to_date = form.birthday.data
+        birthday = Birthday(bd_date=bd_str_to_date)
+        phone = form.phone.data
+        phones = []
+        phones.append(Phone(name=phone))
+        email = form.email.data
+        emails = []
+        emails.append(Email(name=email))
+        address = form.address.data
+        addresses = []
+        addresses.append(Address(name=address))
+        record = Record(name=name, birthday=birthday, phones=phones, emails=emails, addresses=addresses)
+
+        adbook = db_session.query(Address_book).filter(Address_book.id == book_id).first()
+        adbook.records.append(record)
+        db_session.add(adbook)
+        db_session.commit()
+
+        return render_template("records.html", records=records)
+
+    record = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
+    birthday = record.birthday.bd_date.strftime('%m.%d.%Y')
+    return render_template("detail_record.html", record_id=record_id, book_id=book_id, record=record, birthday=birthday)
 
 
 @app.route("/record/<book_id>", methods=["GET", "POST"], strict_slashes=False)
@@ -76,23 +184,6 @@ def create_record(book_id):
         return redirect(f"/records/{book_id}")
     
     return render_template("record.html", book_id=book_id, form=form)
-
-@app.route("/record/result/<book_id>", methods=["GET", "POST"], strict_slashes=False)
-def search_in_record(book_id):
-
-    if request.method == "POST":
-        recorded = []
-        key = request.form.get("key")
-        records = db_session.query(Record).filter(or_(Record.name.like(f'%{key}%'),Record.id.like(f'%{key}%'))).all()
-        for obj in records:
-            res_note = db_session.query(Record).filter(Record.id == obj.id).first()
-            if res_note:
-                if not res_note in recorded:
-                    recorded.append(res_note)
-
-
-        return render_template("record_result.html", recorded=recorded, book_id=book_id, key=key, count_res=1)
-
 
 @app.route("/change/record/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
 def change_record(book_id, record_id):
@@ -167,38 +258,6 @@ def delete_record_info(record_id, book_id):
     return redirect(url_for("get_record_info", book_id=book_id, record_id=record_id))
 
 
-@app.route("/detailrecord/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
-def detailrecord(book_id, record_id):
-    if request.method == "POST":
-        record_to_change = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
-        form = RecordForm()
-        name = form.name.data
-        bd_str_to_date = form.birthday.data
-        birthday = Birthday(bd_date=bd_str_to_date)
-        phone = form.phone.data
-        phones = []
-        phones.append(Phone(name=phone))
-        email = form.email.data
-        emails = []
-        emails.append(Email(name=email))
-        address = form.address.data
-        addresses = []
-        addresses.append(Address(name=address))
-        record = Record(name=name, birthday=birthday, phones=phones, emails=emails, addresses=addresses)
-
-        adbook = db_session.query(Address_book).filter(Address_book.id == book_id).first()
-        adbook.records.append(record)
-        db_session.add(adbook)
-        db_session.commit()
-
-        return render_template("records.html", records=records)
-
-    record = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
-    birthday = record.birthday.bd_date.strftime('%m.%d.%Y')
-    return render_template("detail_record.html", record_id=record_id, book_id=book_id, record=record, birthday=birthday)
-
-
-
 @app.route("/detail/<id>", methods=["GET", "POST"], strict_slashes=False)
 def detail(id):
     if request.method == "POST":
@@ -212,6 +271,13 @@ def detail(id):
         if description:
             note_to_change.description = description
         
+        tags = request.form.get("tags")
+        if tags:
+            pass
+            # db.session.query(Address).filter(Address.contact_id == id).update({"addr": address}, synchronize_session="fetch")
+            # if not cont.address:
+            #     cont.address = [Address(addr=address, contact_id=id)]
+
         db_session.add(note_to_change)
         db_session.commit()
         
@@ -226,6 +292,8 @@ def detail(id):
 
 @app.route("/note/", methods=["GET", "POST"], strict_slashes=False)
 def add_note():
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+
     if request.method == "POST":
         name = request.form.get("name")
         description = request.form.get("description")
@@ -234,25 +302,35 @@ def add_note():
         for tag_id in tags_id:
             tags_obj.append(db_session.query(Tag).filter(Tag.id == tag_id).first())
         note = Note(name=name, description=description, tags=tags_obj)
+
+        user.notes.append(note)
+
         db_session.add(note)
         db_session.commit()
         return redirect("/notebook")
     else:
-        tags = db_session.query(Tag).all()
+        tags = user.tags
+        # tags = db_session.query(Tag).all()
 
     return render_template("note.html", tags=tags)
 
 
 @app.route("/tag/", methods=["GET", "POST"], strict_slashes=False)
 def add_tag():
+
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+
     if request.method == "POST":
         name = request.form.get("name")
         tag = Tag(name=name)
+
+        user.tags.append(tag)
+
         db_session.add(tag)
         db_session.commit()
         return redirect(f"/tag")
 
-    tags = db_session.query(Tag).all()
+    tags = user.tags
     return render_template("tag.html", tags=tags)
 
 
@@ -333,46 +411,17 @@ def coming_birthday():
 
 @app.route("/notebook", methods=["GET", "POST"], strict_slashes=False)
 def notebook():
-    notes = db_session.query(Note).all()
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    notes = user.notes
 
     if request.method == "POST":
         id_tag = request.form.get("tag_ch")
         if id_tag:
             notes = db_session.query(Note).join(note_m2m_tag, isouter=True).join(Tag, isouter=True).filter(Tag.id == id_tag).all()
     
-    tags = db_session.query(Tag).all()
+    tags = user.tags
 
     return render_template("notebook.html", notes=notes, tags=tags)
-# @app.route("/login", methods=["POST", "GET"])
-# def login():
-
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         user = dbase.getUserByEmail(form.email.data)
-#         if user and check_password_hash(user['psw'], form.psw.data):
-#             userlogin = UserLogin().create(user)
-#             rm = form.remember.data
-#             login_user(userlogin, remember=rm)
-#             return redirect(request.args.get("next") or url_for("profile"))
-
-#         flash("Неверная пара логин/пароль", "error")
-
-#     return render_template("login_test.html", menu=dbase.getMenu(), title="Авторизация", form=form)
-
-
-# @app.route("/register", methods=["POST", "GET"])
-# def register():
-#     form = RegisterForm()
-#     if form.validate_on_submit():
-#             hash = generate_password_hash(request.form['psw'])
-#             res = dbase.addUser(form.name.data, form.email.data, hash)
-#             if res:
-#                 flash("Вы успешно зарегистрированы", "success")
-#                 return redirect(url_for('login'))
-#             else:
-#                 flash("Ошибка при добавлении в БД", "error")
-
-#     return render_template("register.html", menu=dbase.getMenu(), title="Регистрация", form=form)
 
 if __name__ == "__main__":
     app.run()
