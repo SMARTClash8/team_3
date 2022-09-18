@@ -1,7 +1,7 @@
 import datetime
 from flask import Flask, render_template, request, redirect, url_for
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag
-from sqlalchemy import or_
+from sqlalchemy import or_#, delete
 from forms import RecordForm#, LoginForm, RegisterForm
 from collections import defaultdict
 from new_parsing import get_wp_news
@@ -180,8 +180,8 @@ def detail(id):
         
         notes = db_session.query(Note).all()
         tags = db_session.query(Tag).all()
-
-        return render_template("notebook.html", notes=notes, tags=tags)
+        redirect(url_for("notebook", notes=notes, tags=tags))
+        #return render_template("notebook.html", notes=notes, tags=tags)
 
     note = db_session.query(Note).filter(Note.id == id).first()
     return render_template("detail.html", note=note, tags=tags)

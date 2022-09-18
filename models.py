@@ -27,13 +27,14 @@ class Note(Base):
     created = Column(DateTime, default=datetime.now())
     description = Column(String(150), nullable=False)
     done = Column(Boolean, default=False)
-    tags = relationship("Tag", secondary=note_m2m_tag, backref="notes")
+    tags = relationship("Tag", secondary=note_m2m_tag, cascade="all, delete", backref="notes")
 
 
 class Tag(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
+    notes = relationship("Note", secondary=note_m2m_tag, cascade="all, delete", backref="tags")
 
     def __repr__(self) -> str:
         return self.name
