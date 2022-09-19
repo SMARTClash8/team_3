@@ -7,12 +7,20 @@ from flask_login import LoginManager, login_user, current_user, logout_user, log
 from forms import LoginForm, RegistrationForm, RecordForm
 from collections import defaultdict
 from new_parsing import get_wp_news
+from fileinput import filename
+import imghdr
+import os
+from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory
+from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
 app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
+app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
+app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
 
@@ -22,9 +30,21 @@ login_manager.login_view = "login"
 
 login_manager.login_message_category = "info"
 
+def validate_image(stream):
+    header = stream.read(512)
+    stream.seek(0)
+    format = imghdr.what(None, header)
+    if not format:
+        return None
+    return '.' + (format if format != 'jpeg' else 'jpg')
+
 @login_manager.user_loader
 def load_user(user_id):
     return db_session.query(User).get(int(user_id))
+
+@app.errorhandler(413)
+def too_large(e):
+    return "File is too large", 413
 
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
@@ -422,6 +442,28 @@ def notebook():
     tags = user.tags
 
     return render_template("notebook.html", notes=notes, tags=tags)
+
+@app.route('/download')
+def download():
+    files = os.listdir(app.config['UPLOAD_PATH'])
+    return render_template('upload.html', files=files, filename=filename)
+
+@app.route('/download', methods=['POST'])
+def upload_files():
+    uploaded_file = request.files['file']
+    filename = secure_filename(uploaded_file.filename)
+    if filename != '':
+        file_ext = os.path.splitext(filename)[1]
+        if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
+                file_ext != validate_image(uploaded_file.stream):
+            return "Invalid image", 400
+        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+    return '', 204
+
+@app.route('/uploads/<filename>')
+def upload(filename):
+    return send_from_directory(app.config['UPLOAD_PATH'], filename)
+
 
 if __name__ == "__main__":
     app.run()
