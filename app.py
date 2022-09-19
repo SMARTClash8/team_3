@@ -19,7 +19,7 @@ app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
-app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
+app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif']
 app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
@@ -85,7 +85,6 @@ def login():
         if user and bcrypt.check_password_hash(user.password,
                                                form.password.data):
             login_user(user, remember=form.remember.data)
-            # next_page = request.args.get("next")
             flash("You have been logged in!", "success")
             return redirect(url_for("index"))
         else:
@@ -454,9 +453,9 @@ def upload_files():
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
-                file_ext != validate_image(uploaded_file.stream):
-            return "Invalid image", 400
+        # if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
+        #         file_ext != validate_image(uploaded_file.stream):
+        #     return "Invalid image", 400
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
     return '', 204
 
