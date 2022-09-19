@@ -1,5 +1,5 @@
 import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
 from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
@@ -484,6 +484,10 @@ def upload_files():
 def upload(filename):
     return send_from_directory(app.config['UPLOAD_PATH'], filename)
 
+@app.route('/downloaded/<file_name>')
+def downloadFile (file_name):
+    path = f'uploads/{file_name}'
+    return send_file(path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run()
