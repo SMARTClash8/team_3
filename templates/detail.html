@@ -35,7 +35,7 @@
                     </th>
                     <th id="description_table"><p id="description" name="description" value="{{note.description}}">{{note.description}}</p></th>
                     <!-- <th style="width: 110px">{{ note.tags|join(', ', attribute='name') }}</th> -->
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{ note.tags|join(', ', attribute='name') }}" readonly /></th>
+                    <th id="tags_table" style="width: 110px"><input id="tags_user" style="width: 110px" type="text" id="id" name="name" value="{{ note.tags|join(', ', attribute='name') }}" readonly /></th>
                     <th style="width: 110px"><kbd>{{note.created.date()}}</kbd></th>
                 </tr>
         </tbody>
@@ -61,8 +61,20 @@
       const descript = document.getElementById("description");
       descript.style.display = "none"
       document.getElementById("description_table").appendChild(cus_input)
- 
+
+      const tags_user = document.getElementById("tags_user");
+      tags_user.style.display = "none"
+      const tags_filter = 
+      ` <select class="form-select" multiple aria-label="select new tags" style="width: 100px;" name="tag_ch" id="tag_ch" >
+        <option disabled selected value> --All tags-- </option>
+        {% for tag in tags %}
+            <option value={{tag.id}}>{{tag.name}}</option>
+        {% endfor %}
+        </select>
+        `
       document.getElementById("save").style.display = "inline-block";
+      
+      document.getElementById('tags_table').innerHTML = tags_filter;
       
     }, {once : true});
     

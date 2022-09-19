@@ -279,6 +279,8 @@ def delete_record_info(record_id, book_id):
 
 @app.route("/detail/<id>", methods=["GET", "POST"], strict_slashes=False)
 def detail(id):
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    tags = user.tags
     if request.method == "POST":
         note_to_change = db_session.query(Note).filter(Note.id==id).first()
 
@@ -290,23 +292,23 @@ def detail(id):
         if description:
             note_to_change.description = description
         
-        tags = request.form.get("tags")
-        if tags:
-            pass
-            # db.session.query(Address).filter(Address.contact_id == id).update({"addr": address}, synchronize_session="fetch")
-            # if not cont.address:
-            #     cont.address = [Address(addr=address, contact_id=id)]
-
+        tags_id_list = request.form.getlist("tag_ch")
+        if tags_id_list:
+            tags_obj = []
+            for tag_id in tags_id_list:
+                tags_obj.append(db_session.query(Tag).filter(Tag.id == tag_id).first())
+            note_to_change.tags = tags_obj
+            
         db_session.add(note_to_change)
         db_session.commit()
         
-        notes = db_session.query(Note).all()
-        tags = db_session.query(Tag).all()
-
-        return render_template("notebook.html", notes=notes, tags=tags)
+        notes = user.notes
+        tags = user.tags
+        redirect(url_for("notebook", notes=notes, tags=tags))
+        #return render_template("notebook.html", notes=notes, tags=tags)
 
     note = db_session.query(Note).filter(Note.id == id).first()
-    return render_template("detail.html", note=note)
+    return render_template("detail.html", note=note, tags=tags)
 
 
 @app.route("/note/", methods=["GET", "POST"], strict_slashes=False)
@@ -341,7 +343,9 @@ def add_tag():
 
     if request.method == "POST":
         name = request.form.get("name")
-        tag = Tag(name=name)
+        tag = db_session.query(Tag).filter(Tag.name == name).first()
+        if not tag:
+            tag = Tag(name=name)
 
         user.tags.append(tag)
 
@@ -355,10 +359,16 @@ def add_tag():
 
 @app.route("/delete/<id>", strict_slashes=False)
 def delete(id):
-    db_session.query(Note).filter(Note.id == id).delete()
-    db_session.commit()
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    if user:
+        note_to_del = db_session.query(Note).filter(Note.id == id).first()
+        user.notes.remove(note_to_del)
+        for tag in note_to_del.tags:
+            tag.notes.remove(note_to_del)
+        db_session.query(Note).filter(Note.id == id).delete()
+        db_session.commit()
 
-    return redirect("/notebook")
+        return redirect("/notebook")
 
 
 @app.route("/done/<id>", strict_slashes=False)
@@ -371,21 +381,25 @@ def done(id):
 
 @app.route("/note/result", methods=["GET", "POST"], strict_slashes=False)
 def search_in_notes():
-
+    
     if request.method == "POST":
         notes = []
         key= request.form.get("key")
-        
-        asc_table_res = db_session.query(note_m2m_tag).\
-                    join(Note, isouter=True).\
-                    join(Tag, isouter=True).\
-                    filter(or_(
-                        Note.name.like(f'%{key}%'),
-                        Tag.name.like(f'%{key}%'),
-                        Note.description.like(f'%{key}%'))).all()
+
+        user = db_session.query(User).filter_by(id=current_user.id).first()
+        res = user.notes.filter(notes.name.like(f'%{key}%')).all()
+        return f"{[i for i in res]}"
+        # asc_table_res = db_session.query(note_m2m_tag).\
+        #             join(Note, isouter=True).\
+        #             join(Tag, isouter=True).\
+        #             filter(or_(
+        #                 Note.name.like(f'%{key}%'),
+        #                 Tag.name.like(f'%{key}%'),
+        #                 Note.description.like(f'%{key}%'))).all()
                         
         if key == 'Done':
-            asc_table_res = db_session.query(Note).filter(Note.done == 1).all()
+            notes = db_session.query(Note).filter(Note.done == 1).all()
+            return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
 
         for obj in asc_table_res:
             res_note = db_session.query(Note).filter(Note.id == obj.note).first()
@@ -398,7 +412,13 @@ def search_in_notes():
 
 @app.route("/delete/tag/<id>", strict_slashes=False)
 def delete_tag(id):
-    db_session.query(Tag).filter(Tag.id == id).delete()
+    tag_to_del = db_session.query(Tag).filter(Tag.id == id).first()
+    user = db_session.query(User).filter_by(id=current_user.id).first()
+    user.tags.remove(tag_to_del)
+    #note_to_del = db_session.query(Note).filter(Tag.id == id).first()
+    for note in tag_to_del.notes:
+        note.tags.remove(tag_to_del)
+    #db_session.query(Tag).filter(Tag.id == id).delete()
     db_session.commit()
 
     return redirect("/tag")
