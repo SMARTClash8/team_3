@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block jumbotron %}<h1>Find out</h1>{% endblock %}
+{% block content %}
+    <a style="margin-bottom: 30px;" href="/records/{{ book_id }}" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
+    <div class="row">
+        <div class="col-lg-6" >
+          <h3 style="margin-bottom: 20px" class="title">Number of matches: {{count_res}}</h3>
+            
+        </div>
+        <div class="col-lg-6">
+            <h3 style="margin-bottom: 20px" class="title">Search word: "{{key}}"</h3>
+        </div>
+    </div>
+    <hr align=center  style="margin-top: 5px;">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Birthday</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for record in recorded %}
+                <tr>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.id}}" readonly /></th>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.name}}" readonly /></th>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="birthday" value="{{record.birthday}}" readonly /></th>
+                    {% for phone in record.phones %} 
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="phones" value="{{phone.name}}" readonly /></th>
+                    {% endfor %}
+                    {% for email in record.emails %} 
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{email.name}}" readonly /></th>
+                    {% endfor %}
+                    {% for address in record.addresses %}
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{address.name}}" readonly /></th>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

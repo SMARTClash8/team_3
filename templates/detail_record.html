@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style>
+      table input[type="text"] {background-color:none}
+      table input[type="text"]:read-only {border: none}
+      #save {display: none}
+      input[type="button"]{font-size: 16px; width: 70px}
+    </style>
+{% endblock %}
+{% block jumbotron %}<h1>Simple editing records</h1>{% endblock %}
+{% block content %}
+<a style="margin-bottom: 30px;" href="/records/{{ book_id }}" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
+<form id="contact-form" method="POST" action="/detail/{{book_id}}/{{record.id}}">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Birthday</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.id}}" readonly /></th>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.name}}" readonly /></th>
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="birthday" value="{{record.birthday}}" readonly /></th>
+                    {% for phone in record.phones %} 
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="phones" value="{{phone.name}}" readonly /></th>
+                    {% endfor %}
+                    {% for email in record.emails %} 
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{email.name}}" readonly /></th>
+                    {% endfor %}
+                    {% for address in record.addresses %}
+                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{address.name}}" readonly /></th>
+                    {% endfor %}
+                </tr>
+        </tbody>
+    </table>
+    <input class="btn btn-primary" type="button" id="edit" value="Edit" />
+    <input class="btn btn-success" type="button" id="save" value="Save" />
+  </form>
+  
+  <script>
+    document.getElementById("edit").addEventListener("click", function() {
+      var fields = document.querySelectorAll("table input[type='text']");
+      for (var i = 0; i < fields.length; i++) {
+        fields[i].readOnly = false;
+      };
+      const cus_input = document.createElement("input");
+      cus_input.type = "text";
+      cus_input.name = "description";
+      cus_input.id = "description";
+      cus_input.style.width = "600px";
+      cus_input.style.hight = "00px";
+      cus_input.value = document.getElementById("description").textContent;
+      const descript = document.getElementById("description");
+      descript.style.display = "none"
+      document.getElementById("description_table").appendChild(cus_input)
+ 
+      document.getElementById("save").style.display = "inline-block";
+      
+    }, {once : true});
+    
+    document.getElementById("save").addEventListener("click", function() {
+      
+      document.getElementById("contact-form").submit();
+    
+      var fields = document.querySelectorAll("table input[type='text']");
+      for (var i = 0; i < fields.length; i++) {
+        fields[i].readOnly = true;
+      }
+    
+      document.getElementById("save").style.display = "none";
+    });
+    </script>  
+{% endblock %}
