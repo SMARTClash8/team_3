@@ -39,12 +39,13 @@ tags_user = Table(
 class User(Base, UserMixin):
 
     __tablename__ = "user"
+    __table_args__ = {'sqlite_autoincrement': True} 
     id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(60), nullable=False)
     addressbooks = relationship("Address_book", secondary=adbooks_user, backref="user")
-    notes = relationship("Note", secondary=notes_user, backref="user")
+    notes = relationship("Note", secondary=notes_user, backref="user", lazy='dynamic')
     tags = relationship("Tag", secondary=tags_user, backref="user")
 
 
@@ -58,13 +59,12 @@ class Note(Base):
     done = Column(Boolean, default=False)
     tags = relationship("Tag", secondary=note_m2m_tag, back_populates="notes", cascade="all, delete")
 
-
 class Tag(Base):
     __tablename__ = "tags"
     __table_args__ = {'sqlite_autoincrement': True} 
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
-    notes = relationship("Note", secondary=note_m2m_tag, back_populates="tags", passive_deletes=True)
+    notes = relationship("Note", secondary=note_m2m_tag, back_populates="tags", cascade="all, delete")
 
     def __repr__(self) -> str:
         return self.name
