@@ -48,7 +48,10 @@ def too_large(e):
 
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
-    return render_template("index_example.html")
+    if current_user.is_authenticated:
+        return render_template("index_example.html")
+    else:
+        return redirect(url_for("registration"))
 
 @app.route("/news", methods=["GET"], strict_slashes=False)
 def get_news():
