@@ -1,7 +1,5 @@
 from flask_login import UserMixin
 from datetime import datetime
-
-
 from sqlalchemy import Column, Integer, String, Boolean, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey, Table, MetaData
@@ -15,9 +13,9 @@ from db import Base, engine, db_session
 note_m2m_tag = Table(
     "note_m2m_tag",
     Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column("note", Integer, ForeignKey("notes.id")),
-    Column("tag", Integer, ForeignKey("tags.id")),
+    #Column("id", Integer, primary_key=True, nullable=True),
+    Column("note", Integer, ForeignKey("notes.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag", Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
 )
 
 notes_user = Table(
@@ -41,29 +39,32 @@ tags_user = Table(
 class User(Base, UserMixin):
 
     __tablename__ = "user"
+    __table_args__ = {'sqlite_autoincrement': True} 
     id = Column(Integer, primary_key=True)
     username = Column(String(100), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(60), nullable=False)
     addressbooks = relationship("Address_book", secondary=adbooks_user, backref="user")
-    notes = relationship("Note", secondary=notes_user, backref="user")
+    notes = relationship("Note", secondary=notes_user, backref="user", lazy='dynamic')
     tags = relationship("Tag", secondary=tags_user, backref="user")
 
 
 class Note(Base):
     __tablename__ = "notes"
+    __table_args__ = {'sqlite_autoincrement': True} 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
     created = Column(DateTime, default=datetime.now())
     description = Column(String(150), nullable=False)
     done = Column(Boolean, default=False)
-    tags = relationship("Tag", secondary=note_m2m_tag, backref="notes")
-
+    tags = relationship("Tag", secondary=note_m2m_tag, back_populates="notes", cascade="all, delete")
 
 class Tag(Base):
     __tablename__ = "tags"
+    __table_args__ = {'sqlite_autoincrement': True} 
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
+    notes = relationship("Note", secondary=note_m2m_tag, back_populates="tags", cascade="all, delete")
 
     def __repr__(self) -> str:
         return self.name
@@ -71,12 +72,14 @@ class Tag(Base):
 
 class Address_book(Base):
     __tablename__= "addressbook"
+    __table_args__ = {'sqlite_autoincrement': True}
     id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
     records = relationship("Record", cascade="all, delete", backref="book")
 
 class Record(Base):
     __tablename__= "record"
+    __table_args__ = {'sqlite_autoincrement': True}
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
     birthday = relationship("Birthday", cascade="all, delete", backref="user", uselist=False)
@@ -87,24 +90,28 @@ class Record(Base):
 
 class Birthday(Base):
     __tablename__= "birthday"
+    __table_args__ = {'sqlite_autoincrement': True}
     id = Column(Integer, primary_key=True)
     bd_date = Column(Date, nullable=False)
     user_id = Column(Integer, ForeignKey(Record.id, ondelete="CASCADE"))
 
 class Phone(Base):
     __tablename__= "phone"
+    __table_args__ = {'sqlite_autoincrement': True}
     id = Column(Integer, primary_key=True)
     name = Column(String(15), nullable=False)
     user_id = Column(Integer, ForeignKey(Record.id, ondelete="CASCADE"))
 
 class Address(Base):
     __tablename__= "address"
+    __table_args__ = {'sqlite_autoincrement': True}
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     user_id = Column(Integer, ForeignKey(Record.id, ondelete="CASCADE"))
 
 class Email(Base):
     __tablename__= "email"
+    __table_args__ = {'sqlite_autoincrement': True}
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     user_id = Column(Integer, ForeignKey(Record.id, ondelete="CASCADE"))
