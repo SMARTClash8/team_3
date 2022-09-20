@@ -1,4 +1,5 @@
 import datetime
+from sre_constants import SUCCESS
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
 from sqlalchemy import or_
@@ -12,6 +13,7 @@ import imghdr
 import os
 from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory
 from werkzeug.utils import secure_filename
+import file_sort
 
 
 app = Flask(__name__)
@@ -19,7 +21,7 @@ app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
-app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif']
+app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif', '.docx', '.py']
 app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
@@ -493,6 +495,39 @@ def download():
 def downloadFile (file_name):
     path = f'uploads/{file_name}'
     return send_file(path, as_attachment=True)
+
+@app.route('/sort', methods=['GET', 'POST'])
+def sort_files():
+    if request.method=='POST':
+
+        folder_path = request.form.get("folder_path")
+        if os.path.isdir(folder_path):
+            file_sort.sort_folder(folder_path)
+
+            flash("Sorting has been completed", "alert alert-success")
+            return redirect(url_for("sort_files"))
+            # return render_template("sort.html", success=success)
+
+        else:
+            fail = "Folder not found or the path is wrong"
+            flash("Folder not found or the path is wrong", "alert alert-danger")
+            return redirect(url_for("sort_files"))
+
+    return render_template("sort.html")
+
+@app.route('/localsort/<file_type>', methods=['GET', 'POST'])
+def local_sort(file_type):
+
+    files = os.listdir(app.config['UPLOAD_PATH'])
+
+    if file_type != "all":
+        ext_folder = file_sort.folder_extension_dict[file_type]
+        display_list = [x for x in files if (x.split(".")[-1].upper() in ext_folder)]
+    else:
+        display_list = files
+
+    return render_template('download.html', file_names=display_list, doc_type=file_type.title())
+
 
 if __name__ == "__main__":
     app.run()

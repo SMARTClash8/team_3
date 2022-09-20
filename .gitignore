@@ -3,3 +3,4 @@ myhelper.db
 *.db*
 requirements.txt
 __pycache__
+uploads
