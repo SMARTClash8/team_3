@@ -21,7 +21,7 @@ app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
-app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif']
+app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif', '.docx', '.py']
 app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
@@ -514,12 +514,16 @@ def sort_files():
 
 @app.route('/localsort/<file_type>', methods=['GET', 'POST'])
 def local_sort(file_type):
-    ext_folder = file_sort.folder_extension_dict[file_type]
+
     files = os.listdir(app.config['UPLOAD_PATH'])
-    display_list = [x for x in files if (x.split(".")[-1].upper() in ext_folder)]
 
+    if file_type != "all":
+        ext_folder = file_sort.folder_extension_dict[file_type]
+        display_list = [x for x in files if (x.split(".")[-1].upper() in ext_folder)]
+    else:
+        display_list = files
 
-    return render_template('download.html', file_names=display_list)
+    return render_template('download.html', file_names=display_list, doc_type=file_type.title())
 
 
 if __name__ == "__main__":

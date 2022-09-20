@@ -14,7 +14,7 @@ folder_extension_dict = {"images": ["JPEG", "PNG", "JPG", "SVG"],
                    "audio": ["MP3", "OGG", "WAV", "AMR"],
                    "video": ["AVI", "MP4", "MOV", "MKV"],
                    "archives": ["ZIP", "GZ", "TAR"],
-                   "others": ["IPYNB"]}
+                   "others": ["IPYNB", "PY"]}
 
 
 def create_sorted_folders(cwd_path):
