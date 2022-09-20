@@ -24,7 +24,7 @@
                 <h2> {{ current_user.username }} </h2>
                 {% endif %}
             </div>
-            
+            {% if current_user.is_authenticated %}
             <nav>
                 <ul class="nav nav-justified">
                 <li data-toggle="tab" class="nav-item"><a href="/">Home</a></li>
@@ -38,6 +38,7 @@
                 <li class="nav-item"><a href="/logout">Logout</a></li>
                 </ul>
             </nav>
+            {% endif %}
             
             <div class="container" id="content" style="margin-top:50px">
                 {% block content %}
