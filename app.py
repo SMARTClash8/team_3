@@ -1,6 +1,6 @@
 import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
-from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
+from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, tags_user
 from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
@@ -12,6 +12,7 @@ import imghdr
 import os
 from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory
 from werkzeug.utils import secure_filename
+import re
 
 
 app = Flask(__name__)
@@ -128,17 +129,19 @@ def create_addressbook():
 def search_in_record(book_id):
 
     if request.method == "POST":
-        recorded = []
+        records = []
         key = request.form.get("key")
-        records = db_session.query(Record).filter(or_(Record.name.like(f'%{key}%'),Record.id.like(f'%{key}%'))).all()
+        #addr_book = db_session.query(Address_book).filter(Address_book.id == book_id).first()
+        records = db_session.query(Record).filter(Record.book_id==book_id).from_self().filter(Record.name.like(f'%{key}%')).all()
         for obj in records:
             res_note = db_session.query(Record).filter(Record.id == obj.id).first()
             if res_note:
-                if not res_note in recorded:
-                    recorded.append(res_note)
+                if not res_note in records:
+                    records.append(res_note)
+                    
 
 
-        return render_template("record_result.html", recorded=recorded, book_id=book_id, key=key, count_res=1)
+        return render_template("record_result.html", records=records, book_id=book_id, key=key, count_res=len(records))
 
 @app.route("/records/<book_id>", methods=["GET"], strict_slashes=False)
 def get_records(book_id):
@@ -150,7 +153,7 @@ def get_records(book_id):
 @app.route("/detailrecord/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
 def detailrecord(book_id, record_id):
     if request.method == "POST":
-        record_to_change = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
+        record_to_change = db_session.query(Record).filter((Record.id == record_id) & (Record.book_id == book_id)).first()
         form = RecordForm()
         name = form.name.data
         bd_str_to_date = form.birthday.data
@@ -173,8 +176,8 @@ def detailrecord(book_id, record_id):
 
         return render_template("records.html", records=records)
 
-    record = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
-    birthday = record.birthday.bd_date.strftime('%m.%d.%Y')
+    record = db_session.query(Record).filter((Record.id == record_id) & (Record.book_id == book_id)).first()
+    birthday = record.birthday.bd_date.strftime('%d.%m.%Y')
     return render_template("detail_record.html", record_id=record_id, book_id=book_id, record=record, birthday=birthday)
 
 
@@ -182,7 +185,8 @@ def detailrecord(book_id, record_id):
 def create_record(book_id):
 
     form = RecordForm()
-    if request.method == "POST":
+    form.book_id = book_id
+    if form.validate_on_submit():
         name = form.name.data
         bd_str_to_date = form.birthday.data
         birthday = Birthday(bd_date=bd_str_to_date)
@@ -231,9 +235,9 @@ def change_record(book_id, record_id):
 
 @app.route("/record/<book_id>/<record_id>", methods=["GET"], strict_slashes=False)
 def get_record_info(book_id, record_id):
-
+    
     record = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
-    birthday = record.birthday.bd_date.strftime('%m.%d.%Y')
+    birthday = record.birthday.bd_date.strftime('%d.%m.%Y')
     return render_template("record_info.html", record_id=record_id, book_id=book_id, record=record, birthday=birthday)
 
 @app.route("/add_record/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
@@ -262,7 +266,6 @@ def delete_addressbook(book_id):
 
 @app.route("/delete/<book_id>/<record_id>", strict_slashes=False)
 def delete_record_info(record_id, book_id):
-
     field_to_delete = request.args.get("name")
     id_to_delete = request.args.get("id")
     record = db_session.query(Record).filter((Record.id == record_id) & (Record.book_id == book_id)).first()
@@ -280,8 +283,9 @@ def delete_record_info(record_id, book_id):
 
 @app.route("/detail/<id>", methods=["GET", "POST"], strict_slashes=False)
 def detail(id):
-    user = db_session.query(User).filter_by(id=current_user.id).first()
+    user = current_user
     tags = user.tags
+
     if request.method == "POST":
         note_to_change = db_session.query(Note).filter(Note.id==id).first()
 
@@ -303,10 +307,9 @@ def detail(id):
         db_session.add(note_to_change)
         db_session.commit()
         
-        notes = user.notes
+        notes = current_user.notes
         tags = user.tags
         redirect(url_for("notebook", notes=notes, tags=tags))
-        #return render_template("notebook.html", notes=notes, tags=tags)
 
     note = db_session.query(Note).filter(Note.id == id).first()
     return render_template("detail.html", note=note, tags=tags)
@@ -314,15 +317,17 @@ def detail(id):
 
 @app.route("/note/", methods=["GET", "POST"], strict_slashes=False)
 def add_note():
-    user = db_session.query(User).filter_by(id=current_user.id).first()
+    user = current_user
 
     if request.method == "POST":
         name = request.form.get("name")
         description = request.form.get("description")
         tags_id= request.form.getlist("tags")
         tags_obj = []
+
         for tag_id in tags_id:
             tags_obj.append(db_session.query(Tag).filter(Tag.id == tag_id).first())
+
         note = Note(name=name, description=description, tags=tags_obj)
 
         user.notes.append(note)
@@ -332,15 +337,13 @@ def add_note():
         return redirect("/notebook")
     else:
         tags = user.tags
-        # tags = db_session.query(Tag).all()
 
     return render_template("note.html", tags=tags)
 
 
 @app.route("/tag/", methods=["GET", "POST"], strict_slashes=False)
 def add_tag():
-
-    user = db_session.query(User).filter_by(id=current_user.id).first()
+    user = current_user
 
     if request.method == "POST":
         name = request.form.get("name")
@@ -360,10 +363,12 @@ def add_tag():
 
 @app.route("/delete/<id>", strict_slashes=False)
 def delete(id):
-    user = db_session.query(User).filter_by(id=current_user.id).first()
+    user = current_user
+
     if user:
         note_to_del = db_session.query(Note).filter(Note.id == id).first()
         user.notes.remove(note_to_del)
+
         for tag in note_to_del.tags:
             tag.notes.remove(note_to_del)
         db_session.query(Note).filter(Note.id == id).delete()
@@ -382,31 +387,24 @@ def done(id):
 
 @app.route("/note/result", methods=["GET", "POST"], strict_slashes=False)
 def search_in_notes():
-    
     if request.method == "POST":
-        notes = []
-        key= request.form.get("key")
+        key = request.form.get("key")
+        notes =  current_user.notes.\
+                        filter(or_(
+                            Note.name.like(f'%{key}%'),
+                            Note.description.like(f'%{key}%'))).all()
 
-        user = db_session.query(User).filter_by(id=current_user.id).first()
-        res = user.notes.filter(notes.name.like(f'%{key}%')).all()
-        return f"{[i for i in res]}"
-        # asc_table_res = db_session.query(note_m2m_tag).\
-        #             join(Note, isouter=True).\
-        #             join(Tag, isouter=True).\
-        #             filter(or_(
-        #                 Note.name.like(f'%{key}%'),
-        #                 Tag.name.like(f'%{key}%'),
-        #                 Note.description.like(f'%{key}%'))).all()
-                        
+        user_notes = current_user.notes
+        for note in user_notes:
+            for tag in note.tags:
+                if re.search(key, tag.name, re.IGNORECASE):
+                    if not note in notes:
+                        notes.append(note)
+                 
         if key == 'Done':
-            notes = db_session.query(Note).filter(Note.done == 1).all()
+            notes = db_session.query(Note).join(User, isouter=True).\
+                        filter(User.id == current_user.id).from_self().filter(Note.done == 1).all()
             return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
-
-        for obj in asc_table_res:
-            res_note = db_session.query(Note).filter(Note.id == obj.note).first()
-            if res_note:
-                if not res_note in notes:
-                    notes.append(res_note)
 
         return render_template("note_result.html", notes=notes, key=key, count_res=len(notes))
 
@@ -414,12 +412,11 @@ def search_in_notes():
 @app.route("/delete/tag/<id>", strict_slashes=False)
 def delete_tag(id):
     tag_to_del = db_session.query(Tag).filter(Tag.id == id).first()
-    user = db_session.query(User).filter_by(id=current_user.id).first()
+    user = current_user
     user.tags.remove(tag_to_del)
-    #note_to_del = db_session.query(Note).filter(Tag.id == id).first()
+
     for note in tag_to_del.notes:
         note.tags.remove(tag_to_del)
-    #db_session.query(Tag).filter(Tag.id == id).delete()
     db_session.commit()
 
     return redirect("/tag")
@@ -427,39 +424,53 @@ def delete_tag(id):
 
 @app.route("/addressbooks/birthdays", methods=["GET", "POST"], strict_slashes=False)
 def coming_birthday():
-    range_days = 60
+    user_records = []
+    birthdays_dict = defaultdict(list)
+
+    current_date = datetime.datetime.now().date()
+    ending_day_of_current_year = datetime.datetime.now().date().replace(month=12, day=31)
+    days_end_year = (ending_day_of_current_year - current_date).days
+
+    range_days = days_end_year
 
     if request.method == "POST":
         inp_brth = request.form.get("key")
         if inp_brth: 
             range_days = int(inp_brth)
 
-    birthdays_dict = defaultdict(list)
-    current_date = datetime.datetime.now().date()
     timedelta_filter = datetime.timedelta(days=range_days)
+    
+    for addr_id in [addr.id for addr in current_user.addressbooks]:
+        recs = db_session.query(Record).filter(Record.book_id == addr_id).all()
+        if recs:
+            for rec in recs:
+                user_records.append((rec.name, rec.birthday.bd_date))
 
-    for name, birthday in [i for i in db_session.query(Record.name, Birthday.bd_date).join(Birthday, isouter=True).all()]:
+    for name, birthday in user_records:
         if name and birthday: 
-            #birthday_date = datetime.strptime(birthday, '%Y-%m-%d').date()
             birthday_date = birthday
             current_birthday = birthday_date.replace(year=current_date.year)
             if current_date <= current_birthday <= current_date + timedelta_filter:
-                birthdays_dict[current_birthday].append(name)
+                birthdays_dict[current_birthday.strftime('%d.%m.%Y')].append(name)
                 
-    return render_template('addressbooks_birthdays.html',  message= birthdays_dict, range_days=range_days)
-
+    return render_template('addressbooks_birthdays.html', message= birthdays_dict, range_days=range_days, days_end_year = int(days_end_year))
+ 
 
 @app.route("/notebook", methods=["GET", "POST"], strict_slashes=False)
 def notebook():
-    user = db_session.query(User).filter_by(id=current_user.id).first()
-    notes = user.notes
-
+    notes = current_user.notes
+    
     if request.method == "POST":
+        notes_filtered = []
         id_tag = request.form.get("tag_ch")
         if id_tag:
-            notes = db_session.query(Note).join(note_m2m_tag, isouter=True).join(Tag, isouter=True).filter(Tag.id == id_tag).all()
-    
-    tags = user.tags
+            for note in notes:
+                for tag in note.tags:
+                    if int(id_tag) == tag.id:
+                        notes_filtered.append(note)
+            notes = notes_filtered
+
+    tags = current_user.tags
 
     return render_template("notebook.html", notes=notes, tags=tags)
 
@@ -487,4 +498,3 @@ def upload(filename):
 
 if __name__ == "__main__":
     app.run()
-

@@ -4,7 +4,8 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateF
     IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo,\
     ValidationError
-from models import User, db_session
+from models import User, Record, db_session
+import datetime
 
 
 class RegistrationForm(FlaskForm):
@@ -34,14 +35,25 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     remember = BooleanField("Remember Me")
     submit = SubmitField("Login")
-
-
-
+    
 
 class RecordForm(FlaskForm):
+    def __init__(self):
+        super().__init__()
+
     name = StringField("Name: ", validators=[DataRequired(message="You need to enter the name")])
     birthday = DateField('Birthday', format='%Y-%m-%d', validators=[DataRequired(message="You need to enter the birthday")])
     phone = StringField("Phone", validators=[DataRequired(message="You need to enter the phone"), Length(min = 10, max = 13)],)
     email = StringField("Email", validators=[Email(), DataRequired(message="You need to enter the email")],)
     address = StringField("Address", validators=[DataRequired(message="You need to enter the address")],)
     submit = SubmitField("Submit")
+
+    def validate_birthday(form, field):
+        if field.data > datetime.date.today():
+            raise ValidationError("The birthday can't be in the future!")
+
+    def validate_name(self, name):
+        contact = db_session.query(Record).filter_by(name=name.data).from_self().filter(Record.book_id==self.book_id).first()
+        if contact:
+            raise ValidationError("That contact name is taken! Choose another")
+
