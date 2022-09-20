@@ -23,7 +23,7 @@ app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif']
 app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
-
+file_names = []
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -462,26 +462,29 @@ def notebook():
 
     return render_template("notebook.html", notes=notes, tags=tags)
 
-@app.route('/download')
-def download():
+@app.route('/upload')
+def upload_get():
     files = os.listdir(app.config['UPLOAD_PATH'])
     return render_template('upload.html', files=files, filename=filename)
 
-@app.route('/download', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 def upload_files():
     uploaded_file = request.files['file']
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        # if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
-        #         file_ext != validate_image(uploaded_file.stream):
-        #     return "Invalid image", 400
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+        file_names.append(filename)
     return '', 204
 
-@app.route('/uploads/<filename>')
+@app.route('/show_download/<filename>')
 def upload(filename):
     return send_from_directory(app.config['UPLOAD_PATH'], filename)
+
+@app.route('/download')
+def download():
+
+    return render_template('download.html', file_names=file_names)
 
 @app.route('/downloaded/<file_name>')
 def downloadFile (file_name):

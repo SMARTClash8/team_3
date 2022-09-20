@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block jumbotron %}<h1>Just upload</h1>{% endblock %}
+{% block content %}
+  <head>
+    <title>File Download</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+  </head>
+  <table class="table table-striped">
+        <thead>
+        <tr>
+                <th>Name</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for file_name in file_names %}
+            <tr>
+                    <th><a href="/downloaded/{{ file_name }}" class="btn btn-primary" role="button">{{file_name}}</a></th>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
