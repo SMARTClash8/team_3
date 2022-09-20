@@ -18,7 +18,7 @@
         {% endif %}
         {% endwith %}
   <!-- Email input -->
-
+  <div class="col-lg-6 col-lg-offset-3">
   <div class="form-outline mb-4">
     {% if not form.email.errors %}
             {{ form.email.label(**{"class": "form-label", "for":"form2Example1"}) }}
@@ -47,15 +47,11 @@
         {% endif %}
     
   </div>
-  <div class="row mb-4">
-    <div class="col d-flex justify-content-center">
-      <!-- Checkbox -->
+
       <div class="form-check">
         {{ form.remember.label(**{"class":"form-check-label",  "for": "form2Example31", "checked": true})}}
         {{ form.remember(**{"class":"form-check-input",  "id": "form2Example31", "checked": true})}}
       
-      </div>
-    </div>
 
   </div>
 
@@ -67,11 +63,7 @@
     <p>Not a member? <a href="/registration">Register</a></p>
 
   </div>
-  <!-- Submit button -->
-  <!-- <div class="mb-3">
-    {{ form.submit(type="submit", class="btn btn-primary") }}
-  </div> -->
-
+  </div>
   </div>
 </form>
 

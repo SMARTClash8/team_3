@@ -1,6 +1,7 @@
 import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
-from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, tags_user
+from sre_constants import SUCCESS
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
 from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
@@ -13,6 +14,8 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, abort, send_from_directory
 from werkzeug.utils import secure_filename
 import re
+import file_sort
+
 
 
 app = Flask(__name__)
@@ -20,11 +23,11 @@ app.debug = True
 app.env = "development"
 app.config['SECRET_KEY'] = 'any secret string'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
-app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif']
+app.config['UPLOAD_EXTENSIONS'] = ['.txt', '.jpg', '.png', '.gif', '.docx', '.py']
 app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
-
+file_names = []
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -49,7 +52,10 @@ def too_large(e):
 
 @app.route("/", methods=["GET", "POST"], strict_slashes=False)
 def index():
-    return render_template("index_example.html")
+    if current_user.is_authenticated:
+        return render_template("index_example.html")
+    else:
+        return redirect(url_for("registration"))
 
 @app.route("/news", methods=["GET"], strict_slashes=False)
 def get_news():
@@ -86,7 +92,6 @@ def login():
         if user and bcrypt.check_password_hash(user.password,
                                                form.password.data):
             login_user(user, remember=form.remember.data)
-            # next_page = request.args.get("next")
             flash("You have been logged in!", "success")
             return redirect(url_for("index"))
         else:
@@ -474,26 +479,66 @@ def notebook():
 
     return render_template("notebook.html", notes=notes, tags=tags)
 
-@app.route('/download')
-def download():
+@app.route('/upload')
+def upload_get():
     files = os.listdir(app.config['UPLOAD_PATH'])
     return render_template('upload.html', files=files, filename=filename)
 
-@app.route('/download', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 def upload_files():
     uploaded_file = request.files['file']
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
-        if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
-                file_ext != validate_image(uploaded_file.stream):
-            return "Invalid image", 400
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+        file_names.append(filename)
     return '', 204
 
-@app.route('/uploads/<filename>')
+@app.route('/show_download/<filename>')
 def upload(filename):
     return send_from_directory(app.config['UPLOAD_PATH'], filename)
+
+@app.route('/download')
+def download():
+
+    return render_template('download.html', file_names=file_names)
+
+@app.route('/downloaded/<file_name>')
+def downloadFile (file_name):
+    path = f'uploads/{file_name}'
+    return send_file(path, as_attachment=True)
+
+@app.route('/sort', methods=['GET', 'POST'])
+def sort_files():
+    if request.method=='POST':
+
+        folder_path = request.form.get("folder_path")
+        if os.path.isdir(folder_path):
+            file_sort.sort_folder(folder_path)
+
+            flash("Sorting has been completed", "alert alert-success")
+            return redirect(url_for("sort_files"))
+            # return render_template("sort.html", success=success)
+
+        else:
+            fail = "Folder not found or the path is wrong"
+            flash("Folder not found or the path is wrong", "alert alert-danger")
+            return redirect(url_for("sort_files"))
+
+    return render_template("sort.html")
+
+@app.route('/localsort/<file_type>', methods=['GET', 'POST'])
+def local_sort(file_type):
+
+    files = os.listdir(app.config['UPLOAD_PATH'])
+
+    if file_type != "all":
+        ext_folder = file_sort.folder_extension_dict[file_type]
+        display_list = [x for x in files if (x.split(".")[-1].upper() in ext_folder)]
+    else:
+        display_list = files
+
+    return render_template('download.html', file_names=display_list, doc_type=file_type.title())
 
 
 if __name__ == "__main__":
