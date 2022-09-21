@@ -55,10 +55,11 @@
             {% for note in notes %}
                 <tr>
                     {%if not note.done%}
-                    <th><a href="/detail/{{note.id}}" class="btn btn-primary" role="button">{{note.name}}</a></th>
-                    <th>{{ note.tags|join(', ', attribute='name') }}</th>
+                    <th style="width: 250px">{{note.name}}</th>
+                    <th style="width: 250px">{{ note.tags|join(', ', attribute='name') }}</th>
                     <th><kbd>{{note.created.date()}}</kbd></th>
-                    <th>
+                    <th style="width: 350px">
+                        <a href="/detail/{{note.id}}" class="btn btn-primary" role="button"><span class="bi bi-search"></span>Details</a>
                         <a href="/done/{{note.id}}" class="btn btn-success" role="button"><span class="bi bi-check-circle"></span>Done</a>
                         <a href="/delete/{{note.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash"></span>Delete</a>
                     </th>
