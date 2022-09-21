@@ -40,10 +40,12 @@
                             <a href="/delete/{{note.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash"></span>Delete</a>
                         </th>
                         {% else %}
-                        <th><a href="/detail/{{note.id}}" class="btn btn-success" role="button"><s>{{note.name}}</s></a></th>
-                        <th><s>{{ note.tags|join(', ', attribute='name') }}</s></th>
+                        <th style="width: 250px"><s style="color:brown" >{{note.name}}</s></th>
+                        <th style="width: 250px"><s style="color:brown">{{ note.tags|join(', ', attribute='name') }}</s></th>
                         <th><kbd><s>{{note.created.date()}}</s></kbd></th>
-                        <th><a href="/delete/{{note.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash">Delete</a></th>
+                        <th style="width: 350px">
+                            <a href="/detail/{{note.id}}" class="btn btn-primary" role="button"><span class="bi bi-search"></span>Details</a>
+                            <a href="/delete/{{note.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash">Delete</a></th>
                         {% endif %} 
                     </tr>
                 {% endfor %}

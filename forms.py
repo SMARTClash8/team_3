@@ -36,8 +36,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
 
 
-
-
 class RecordForm(FlaskForm):
     name = StringField("Name: ", validators=[DataRequired(message="You need to enter the name")])
     birthday = DateField('Birthday', format='%Y-%m-%d', validators=[DataRequired(message="You need to enter the birthday")])
@@ -45,3 +43,13 @@ class RecordForm(FlaskForm):
     email = StringField("Email", validators=[Email(), DataRequired(message="You need to enter the email")],)
     address = StringField("Address", validators=[DataRequired(message="You need to enter the address")],)
     submit = SubmitField("Submit")
+
+    def validate_birthday(form, field):
+        if field.data > datetime.date.today():
+            raise ValidationError("Person hasn't botn yet!")
+
+    def validate_name(self, name):
+        contact = db_session.query(Record).filter_by(name=name.data).from_self().filter(Record.book_id==self.book_id).first()
+        if contact:
+            raise ValidationError("That contact name is taken! Choose another")
+
