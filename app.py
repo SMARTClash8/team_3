@@ -53,7 +53,7 @@ def index():
     if current_user.is_authenticated:
         return render_template("index_example.html")
     else:
-        return redirect(url_for("registration"))
+        return redirect(url_for("login"))
 
 @app.route("/news", methods=["GET"], strict_slashes=False)
 def get_news():
