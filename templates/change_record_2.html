@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}{{ super() }}
+<style>
+  .wpforms-form {
+    background-color: #eee; /* Grey background */
+    border: 1px solid #ddd; /* Dark grey border */
+    color: #333; /* Black text color */
+    font-size: 1em; /* Size of text */
+    padding: 10px 15px; /* Distance between text and border */
+}
+</style>
+{% endblock %}
+{% block jumbotron %}<h1>Just add new addressbook</h1>{% endblock %}
+{% block content %}
+  <a style="margin-bottom: 30px;" href="/detailrecord/{{ book_id }}/{{record_id}}" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
+  <body>
+      <form method="POST">
+        <table class="table table-striped">
+          <thead>
+          <tr align="center">
+              <th><span style="font-size: 15px;"><u>Current data:</u><br></span> <span style="color: brown;">"{{record.name}}"</span></th>
+              <th><br><span style="color: brown;">"{{birthday}}"</th>
+              <th><br><span style="color: brown;">"{{ record.phones|join(', ', attribute='name') }}"</th>
+              <th><br><span style="color: brown;">"{{ record.emails|join(', ', attribute='name') }}"</span></th>
+              <th><br><span style="color: brown;">"{{ record.addresses|join(', ', attribute='name') }}"</span></th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr id="for_new_input">
+              <th id="rec_name_table" style="width: 250px">
+                {{ form.hidden_tag() }}
+
+                {% if not form.name.errors %}
+                  {{form.name(placeholder="New name")}}
+                {% else %}
+                    {{ form.name(**{"aria-invalid": "true"})}}
+                    {% for error in form.name.errors %}
+                    <span style="color: red;">{{ error }}</span><br>
+                    {% endfor %}
+                {% endif %}
+              </th>
+              <th id="rec_brth_table" style="width: 80px">
+                {% if not form.birthday.errors %}
+                  {{form.birthday()}}
+                {% else %}
+                    {{ form.birthday(**{"aria-invalid": "true"})}}
+                    {% for error in form.birthday.errors %}
+                    <span style="color: red;">{{ error }}</span><br>
+                    {% endfor %}
+                {% endif %}
+              </th>
+              <th id="rec_phn_table" style="width: 100px">{{form.phone(placeholder="New phone")}}</th>
+              <th id="rec_eml_table" style="width: 200px">{{form.email(placeholder="New email")}}</th>
+              <th id="rec_addr_table" style="width: 250px">{{form.address(placeholder="New address")}}</th>
+            </tr>
+          </tbody>
+        </table>
+        <p>{{ form.submit(_class="wpforms-form") }}</p>
+      </form>
+    </main>
+  </body>
+{% endblock %}
