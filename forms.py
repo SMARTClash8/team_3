@@ -50,7 +50,7 @@ class RecordForm(FlaskForm):
 
     def validate_birthday(form, field):
         if field.data > datetime.date.today():
-            raise ValidationError("The birthday can't be in the future!")
+            raise ValidationError("Person hasn't botn yet!")
 
     def validate_name(self, name):
         contact = db_session.query(Record).filter_by(name=name.data).from_self().filter(Record.book_id==self.book_id).first()

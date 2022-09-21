@@ -1,7 +1,7 @@
 import datetime
 from sre_constants import SUCCESS
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
-from models import File, Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, tags_user
+from models import File, Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, User
 from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
@@ -157,30 +157,7 @@ def get_records(book_id):
 
 @app.route("/detailrecord/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
 def detailrecord(book_id, record_id):
-    if request.method == "POST":
-        record_to_change = db_session.query(Record).filter((Record.id == record_id) & (Record.book_id == book_id)).first()
-        form = RecordForm()
-        name = form.name.data
-        bd_str_to_date = form.birthday.data
-        birthday = Birthday(bd_date=bd_str_to_date)
-        phone = form.phone.data
-        phones = []
-        phones.append(Phone(name=phone))
-        email = form.email.data
-        emails = []
-        emails.append(Email(name=email))
-        address = form.address.data
-        addresses = []
-        addresses.append(Address(name=address))
-        record = Record(name=name, birthday=birthday, phones=phones, emails=emails, addresses=addresses)
-
-        adbook = db_session.query(Address_book).filter(Address_book.id == book_id).first()
-        adbook.records.append(record)
-        db_session.add(adbook)
-        db_session.commit()
-
-        return render_template("records.html", records=records)
-
+   
     record = db_session.query(Record).filter((Record.id == record_id) & (Record.book_id == book_id)).first()
     birthday = record.birthday.bd_date.strftime('%d.%m.%Y')
     return render_template("detail_record.html", record_id=record_id, book_id=book_id, record=record, birthday=birthday)
@@ -214,28 +191,35 @@ def create_record(book_id):
     
     return render_template("record.html", book_id=book_id, form=form)
 
-@app.route("/change/record/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
+@app.route("/change-record/<book_id>/<record_id>", methods=["GET", "POST"], strict_slashes=False)
 def change_record(book_id, record_id):
 
-    data_type = request.args.get("name")
+    form = RecordForm()
+    form.book_id = book_id
+    record = db_session.query(Record).filter((Record.id == record_id) & (Record.book_id == book_id)).first()
+    birthday = record.birthday.bd_date.strftime('%d.%m.%Y')
+    if form.validate_on_submit():        
 
-    if request.method == "POST":
+        name = form.name.data
+        record.name = name
 
-        name = request.form.get("name")
-        record = db_session.query(Record).filter( (Record.id == record_id) & (Record.book_id == book_id)).first()
+        brth_user = form.birthday.data
+        db_session.query(Birthday).filter(Birthday.user_id == record_id).update({"bd_date": brth_user}, synchronize_session="fetch")
 
-        fields_dict = {"phone": {"class": Phone, "records_attr": record.phones, "get_name": "phone"},
-                       "email": {"class": Email, "records_attr": record.emails, "get_name": "email"},
-                       "address": {"class": Address, "records_attr": record.addresses, "get_name": "address"}
-                       }
-        class_name = fields_dict[data_type]["class"]
-        add_list = fields_dict[data_type]["records_attr"]
-        add_list.append(class_name(name=name))
+        phone = form.phone.data
+        db_session.query(Phone).filter(Phone.user_id == record_id).update({"name": phone}, synchronize_session="fetch")
 
+        email = form.email.data
+        db_session.query(Email).filter(Email.user_id == record_id).update({"name": email}, synchronize_session="fetch")
+
+        address = form.address.data
+        db_session.query(Address).filter(Address.user_id == record_id).update({"name": address}, synchronize_session="fetch")
+        
+        db_session.add(record)
         db_session.commit()
-        return redirect(url_for("get_record_info", book_id=book_id, record_id=record_id))
-    
-    return render_template("change_record.html", data_type=data_type, book_id=book_id, record_id=record_id)
+        return redirect(f"/detailrecord/{book_id}/{record_id}")
+
+    return render_template("change_record_2.html", record_id=record_id, book_id=book_id, form=form, record=record, birthday=birthday)
 
 
 @app.route("/record/<book_id>/<record_id>", methods=["GET"], strict_slashes=False)
@@ -263,6 +247,8 @@ def delete_record(book_id, record_id):
 
 @app.route("/delete/addressbook/<book_id>", strict_slashes=False)
 def delete_addressbook(book_id):
+    addr_del = db_session.query(Address_book).filter(Address_book.id == book_id).first()
+    current_user.addressbooks.remove(addr_del)
     db_session.query(Address_book).filter(Address_book.id == book_id).delete()
     db_session.commit()
 
@@ -445,18 +431,18 @@ def coming_birthday():
 
     timedelta_filter = datetime.timedelta(days=range_days)
     
-    for addr_id in [addr.id for addr in current_user.addressbooks]:
+    for addr_id, addr_name in [(addr.id, addr.name) for addr in current_user.addressbooks]:
         recs = db_session.query(Record).filter(Record.book_id == addr_id).all()
         if recs:
             for rec in recs:
-                user_records.append((rec.name, rec.birthday.bd_date))
+                user_records.append((rec.name, rec.birthday.bd_date, addr_name))
 
-    for name, birthday in user_records:
+    for name, birthday, addr_name in user_records:
         if name and birthday: 
             birthday_date = birthday
             current_birthday = birthday_date.replace(year=current_date.year)
             if current_date <= current_birthday <= current_date + timedelta_filter:
-                birthdays_dict[current_birthday.strftime('%d.%m.%Y')].append(name)
+                birthdays_dict[current_birthday.strftime('%d.%m.%Y')].append(f"{name} (Book: {addr_name})")
                 
     return render_template('addressbooks_birthdays.html', message= birthdays_dict, range_days=range_days, days_end_year = int(days_end_year))
  
