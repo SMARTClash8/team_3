@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Index{% endblock %}
-{% block head %}{{ super() }}{% endblock %}
+{% block head %}{{ super() }}
+{% endblock %}
 {% block jumbotron %}<h1>Just add new addressbook</h1>{% endblock %}
 {% block content %}
   <a style="margin-bottom: 30px;" href="/records/{{ book_id }}" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
@@ -12,12 +13,31 @@
       </nav>
       <form method="POST" action="/record/{{book_id}}">
         {{ form.hidden_tag() }}
-        <p>{{ form.name.label()}} {{form.name()}}
-        <p>{{ form.birthday.label()}} {{form.birthday()}}
-        <p>{{ form.phone.label()}} {{form.phone()}}
-        <p>{{ form.email.label()}} {{form.email()}}
-        <p>{{ form.address.label()}} {{form.address()}}
-        <p>{{ form.submit() }}
+
+        {% if not form.name.errors %}
+          <p>{{ form.name.label()}} {{form.name()}}<br>
+        {% else %}
+        {{ form.name.label }}
+            {{ form.name(**{"aria-invalid": "true"})}}
+            {% for error in form.name.errors %}
+            <p><span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        {% endif %}
+
+        {% if not form.birthday.errors %}
+          <p>{{ form.birthday.label()}} {{form.birthday()}}<br>
+        {% else %}
+        {{ form.birthday.label }}
+            {{ form.birthday(**{"aria-invalid": "true"})}}
+            {% for error in form.birthday.errors %}
+            <p><span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        {% endif %}
+        
+        <p>{{ form.phone.label()}} {{form.phone()}}<br>
+        <p>{{ form.email.label()}} {{form.email()}}<br>
+        <p>{{ form.address.label()}} {{form.address()}}<br>
+        <p>{{ form.submit() }}<br>
       </form>
     </main>
   </body>

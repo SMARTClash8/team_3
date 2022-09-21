@@ -3,19 +3,20 @@
 {% block head %}
     {{ super() }}
     <style>
-      table input[type="text"] {background-color:none}
-      table input[type="text"]:read-only {border: none}
+      table input[class="changable"] {background-color:none}
+      table input[class="changable"]:read-only {border: none}
+      #save {display: none}
       input[type="button"]{font-size: 16px; width: 70px}
     </style>
 {% endblock %}
 {% block jumbotron %}<h1>Simple editing records</h1>{% endblock %}
 {% block content %}
 <a style="margin-bottom: 30px;" href="/records/{{ book_id }}" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
-<form id="contact-form" method="POST" action="/detail/{{book_id}}/{{record.id}}">
+<form id="contact-form" method="POST" action="/detailrecord/{{book_id}}/{{record.id}}">
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
+            <!-- <th>Id</th> -->
             <th>Name</th>
             <th>Birthday</th>
             <th>Phone</th>
@@ -24,18 +25,18 @@
         </tr>
         </thead>
         <tbody>
-                <tr>
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.id}}" readonly /></th>
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.name}}" readonly /></th>
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="birthday" value="{{record.birthday}}" readonly /></th>
+                <tr id="for_new_input">
+                    <!-- <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.id}}" readonly /></th> -->
+                    <th id="rec_name_table" style="width: 250px"><input style="width: 250px" type="text" class="changable" id="id" name="name" value="{{record.name}}" readonly /></th>
+                    <th id="rec_brth_table" style="width: 80px"><input style="width: 80px" type="text" class="changable" id="birthday" name="birthday" value="{{birthday}}" pattern="\d{2}\.\d{2}.\d{4}" readonly /></th>
                     {% for phone in record.phones %} 
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="phones" value="{{phone.name}}" readonly /></th>
+                    <th id="rec_phn_table" style="width: 100px"><input style="width: 100px" type="tel" class="changable" id="id" name="phones" value="{{phone.name}}" readonly /></th>
                     {% endfor %}
                     {% for email in record.emails %} 
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{email.name}}" readonly /></th>
+                    <th id="rec_eml_table" style="width: 200px"><input style="width: 200px" type="email" class="changable" id="id" name="name" value="{{email.name}}" pattern="[a-zA-Z][\w.]+@[a-zA-z]+\.[a-zA-Z]{2,}" readonly /></th>
                     {% endfor %}
                     {% for address in record.addresses %}
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{address.name}}" readonly /></th>
+                    <th id="rec_addr_table" style="width: 250px"><input style="width: 250px" type="text"class="changable"  id="id" name="name" value="{{address.name}}" readonly /></th>
                     {% endfor %}
                 </tr>
         </tbody>
@@ -46,20 +47,30 @@
   
   <script>
     document.getElementById("edit").addEventListener("click", function() {
-      var fields = document.querySelectorAll("table input[type='text']");
+      var fields = document.querySelectorAll("table input[class='changable']");
       for (var i = 0; i < fields.length; i++) {
         fields[i].readOnly = false;
       };
+
+      document.getElementById("birthday").style.display = "none"
       const cus_input = document.createElement("input");
-      cus_input.type = "text";
-      cus_input.name = "description";
-      cus_input.id = "description";
-      cus_input.style.width = "600px";
-      cus_input.style.hight = "00px";
-      cus_input.value = document.getElementById("description").textContent;
-      const descript = document.getElementById("description");
-      descript.style.display = "none"
-      document.getElementById("description_table").appendChild(cus_input)
+      cus_input.type = "date";
+      cus_input.name = "birthday";
+      cus_input.id = "birthday";
+      document.getElementById("rec_brth_table").appendChild(cus_input)
+
+
+
+      // const cus_input = document.createElement("input");
+      // cus_input.type = "text";
+      // cus_input.name = "description";
+      // cus_input.id = "description";
+      // cus_input.style.width = "600px";
+      // cus_input.style.hight = "00px";
+      // cus_input.value = document.getElementById("description").textContent;
+      // const descript = document.getElementById("description");
+      // descript.style.display = "none"
+      // document.getElementById("description_table").appendChild(cus_input)
  
       document.getElementById("save").style.display = "inline-block";
       
@@ -69,7 +80,7 @@
       
       document.getElementById("contact-form").submit();
     
-      var fields = document.querySelectorAll("table input[type='text']");
+      var fields = document.querySelectorAll("table input[class='changable']");
       for (var i = 0; i < fields.length; i++) {
         fields[i].readOnly = true;
       }

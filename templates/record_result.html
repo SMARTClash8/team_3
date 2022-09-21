@@ -19,29 +19,22 @@
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Birthday</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Email</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Action</th>
         </tr>
         </thead>
         <tbody>
-            {% for record in recorded %}
-                <tr>
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.id}}" readonly /></th>
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{record.name}}" readonly /></th>
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="birthday" value="{{record.birthday}}" readonly /></th>
-                    {% for phone in record.phones %} 
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="phones" value="{{phone.name}}" readonly /></th>
-                    {% endfor %}
-                    {% for email in record.emails %} 
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{email.name}}" readonly /></th>
-                    {% endfor %}
-                    {% for address in record.addresses %}
-                    <th style="width: 110px"><input style="width: 110px" type="text" id="id" name="name" value="{{address.name}}" readonly /></th>
-                    {% endfor %}
+            {% for record in records %}
+            <tr>
+                    <th>{{record.name}}</th>
+                    <th>{{ record.phones|join(', ', attribute='name') }}</th>
+                    <th>{{ record.emails|join(', ', attribute='name') }}</th>
+                    <th>
+                        <a href="/detailrecord/{{book_id}}/{{record.id}}" class="btn btn-primary" role="button"><span class="bi bi-search"></span>Details</a>
+                        <a href="/deleterecord/{{ book_id }}/{{record.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash"></span>Delete</a>
+                    </th>
                 </tr>
             {% endfor %}
         </tbody>

@@ -15,7 +15,7 @@
         <div class="col-lg-6">
             <div class="col-lg-6" align="right">
                 <form method="POST" action="/record/result/{{ book_id }}">
-                    <input type="search" name="key" placeholder="Search" required>
+                    <input type="search" name="key" placeholder="Search by name" required>
                     <button type="submit"><span class="bi bi-search"></span> Search</button>
                 </form>
             </div>
@@ -24,17 +24,20 @@
     <table class="table table-striped">
         <thead>
         <tr>
-                <th>Id</th>
                 <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
                 <th>Action</th>
         </tr>
         </thead>
         <tbody>
             {% for record in records %}
             <tr>
-                    <th><a href="/detailrecord/{{book_id}}/{{record.id}}" class="btn btn-primary" role="button">{{record.id}}</a></th>
-                    <th>{{ record.name }}</th>
+                    <th>{{record.name}}</th>
+                    <th>{{ record.phones|join(', ', attribute='name') }}</th>
+                    <th>{{ record.emails|join(', ', attribute='name') }}</th>
                     <th>
+                        <a href="/detailrecord/{{book_id}}/{{record.id}}" class="btn btn-primary" role="button"><span class="bi bi-search"></span>Details</a>
                         <a href="/deleterecord/{{ book_id }}/{{record.id}}" class="btn btn-danger" role="button" ><span class="bi bi-trash"></span>Delete</a>
                     </th>
                 </tr>
