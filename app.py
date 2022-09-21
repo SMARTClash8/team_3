@@ -1,7 +1,7 @@
 import datetime
 from sre_constants import SUCCESS
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
-from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, User
+from models import File, Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, User
 from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
@@ -472,12 +472,17 @@ def upload_get():
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
+    user = current_user
     uploaded_file = request.files['file']
     filename = secure_filename(uploaded_file.filename)
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-        file_names.append(filename)
+        file_names.append(filename) 
+        file = File(file_name=filename)
+        user.files.append(file)
+        db_session.add(file)
+        db_session.commit()
     return '', 204
 
 @app.route('/show_download/<filename>')
@@ -486,8 +491,8 @@ def upload(filename):
 
 @app.route('/download')
 def download():
-
-    return render_template('download.html', file_names=file_names)
+    user = current_user
+    return render_template('download.html', file_names=user.files)
 
 @app.route('/downloaded/<file_name>')
 def downloadFile (file_name):

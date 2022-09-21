@@ -16,3 +16,9 @@ soupsieve==2.3.2.post1
 SQLAlchemy==1.4.39
 urllib3==1.26.12
 Werkzeug==2.1.2
+aioshutil
+aiopath
+flask_login
+flask_bcrypt
+flask_wtf
+email_validator
