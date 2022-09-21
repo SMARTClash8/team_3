@@ -35,6 +35,12 @@ tags_user = Table(
     Column("user_id", Integer, ForeignKey("user.id")),
     Column("tag_id", Integer, ForeignKey("tags.id")))
 
+files_user = Table(
+    'files_user',
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("user.id")),
+    Column("files_id", Integer, ForeignKey("file.id")))
+
 class User(Base, UserMixin):
 
     __tablename__ = "user"
@@ -46,6 +52,7 @@ class User(Base, UserMixin):
     addressbooks = relationship("Address_book", secondary=adbooks_user, backref="user", lazy='dynamic')
     notes = relationship("Note", cascade="all, delete, delete-orphan", backref="user", lazy='dynamic')
     tags = relationship("Tag", secondary=tags_user, backref="user")
+    files = relationship("File", secondary=files_user, backref="user")
 
 
 class Note(Base):
@@ -88,6 +95,12 @@ class Record(Base):
     addresses = relationship("Address", cascade="all, delete", backref="user")
     emails = relationship("Email", cascade="all, delete", backref="user")
     book_id = Column(Integer, ForeignKey(Address_book.id, ondelete="CASCADE"))
+
+class File(Base):
+    __tablename__ = "file"
+    __table_args__ = {'sqlite_autoincrement': True}
+    id = Column(Integer, primary_key=True)
+    file_name = Column(String(50), nullable=False, unique=True)
 
 class Birthday(Base):
     __tablename__= "birthday"
