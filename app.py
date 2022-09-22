@@ -1,7 +1,12 @@
 import datetime
+<<<<<<< Updated upstream
 from sre_constants import SUCCESS
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from models import File, Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, User
+=======
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from models import Note, Tag, Address_book, Record, Birthday, Phone, Email, Address, db_session, note_m2m_tag, User, adbooks_user, notes_user, tags_user
+>>>>>>> Stashed changes
 from sqlalchemy import or_
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
@@ -488,7 +493,9 @@ def upload_files():
 @app.route('/show_download/<filename>')
 def upload(filename):
     return send_from_directory(app.config['UPLOAD_PATH'], filename)
+app = Flask(__name__)
 
+<<<<<<< Updated upstream
 @app.route('/download')
 def download():
     user = current_user
@@ -497,6 +504,11 @@ def download():
 @app.route('/downloaded/<file_name>')
 def downloadFile (file_name):
     path = f'uploads/{file_name}'
+=======
+@app.route('/downloaded/<file_name>')
+def downloadFile (file_name):
+    path = file_name
+>>>>>>> Stashed changes
     return send_file(path, as_attachment=True)
 
 @app.route('/sort', methods=['GET', 'POST'])
