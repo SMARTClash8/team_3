@@ -3,32 +3,28 @@
 {% block head %}
     {{ super() }}
 {% endblock %}
-{% block jumbotron %}<h1>Just upload</h1>{% endblock %}
+{% block jumbotron %}<h1>Just download</h1>{% endblock %}
 {% block content %}
   <head>
     <title>File Download</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
   </head>
   <div class="row">
-  <!-- <div class="col-lg-6" align="left"> -->
-    <a href="/localsort/images" class="btn btn-primary" role="button">
-        Images
-    </a>
-    <!-- <div class="col-lg-6" align="left"> -->
-        <a href="/localsort/documents" class="btn btn-primary" role="button">
-            Documents
+    {% for type in ["images", "documents", "others", "all"] %}
+        {% if type==doc_type%}
+        <a href="/localsort/{{type}}" class="btn btn-primary active" role="button">
+            {{type}}
         </a>
-        <!-- <div class="col-lg-6" align="left"> -->
-            <a href="/localsort/others" class="btn btn-primary" role="button">
-                Other
-            </a>
+        {% else%}
     <!-- <div class="col-lg-6" align="left"> -->
-        <a href="/localsort/all" class="btn btn-primary" role="button">
-            All
+        <a href="/localsort/{{type}}" class="btn btn-primary" role="button">
+            {{type}}
         </a>
+        {% endif%}
+    {% endfor %}
+  
     </div>
 
-        <h5 class="card-title"> <b>{{ doc_type }}</b></h5>
 
 
   <table class="table table-striped">
