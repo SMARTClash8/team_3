@@ -1,23 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Registration</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-  </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/login" role="button">Back to login</a></li>
-        </ul>
-      </nav>
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+  <!-- {% block head %}
+      {{ super() }}
+  {% endblock %} -->
+{% block jumbotron %}<h1>Just fill in the form</h1>{% endblock %}
+{% block content %}
+<head>
+  <title> Registration </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+</head>
+<div class="form-outline mb-4 col-lg-offset-3" style="padding: 10px;"> 
+   <a href="/login" class="btn btn-primary" role="button">
+    Back to login
+</a>
+</div>
     <form method="POST" action="/registration">
+
       {% with messages = get_flashed_messages() %}
       {% if messages %}
       {% for message in messages %}
@@ -30,64 +28,65 @@
 
       <!-- Grid -->
       <!-- <div class="grid"> -->
-        <ul>
+        <div class="border-primary mb-3 col-lg-10 col-lg-offset-3" style="padding: 20px;">
+        <div class="form-outline mb-4" style="padding-bottom:10px;">
 
           {% if not form.username.errors %}
-            {{ form.username.label }}
-            {{ form.username }}
-          {% else %}
-            {{ form.username.label }}
-            {{ form.username(**{"aria-invalid": "true"})}}
+            {{ form.username.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label ") }}
+            {{ form.username() }}
+        {% else %}
+            {{ form.username.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label") }}
+            {{ form.username(style="border: 2px solid red")}}
         
             {% for error in form.password.errors %}
             <span style="color: red;">{{ error }}</span>
             {% endfor %}
         {% endif %}
-
-
+      </div>
+      <div class="form-outline mb-4" style="padding-bottom:10px;">
           {% if not form.email.errors %}
-            {{ form.email.label }}
+            {{ form.email.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label") }}
             {{ form.email }}
           {% else %}
-            {{ form.email.label }}
-            {{ form.email(**{"aria-invalid": "true"})}}
+            {{ form.email.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label ") }}
+            {{ form.email(style="border: 2px solid red")}}
             {% for error in form.email.errors %}
             <span style="color: red;">{{ error }}</span>
           {% endfor %}
         {% endif %}
-
+        </div>
+        <div class="form-outline mb-4" style="padding-bottom:10px;">
 
         {% if not form.password.errors %}
-            {{ form.password.label }}
+            {{ form.password.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label ") }}
             {{ form.password }}
         {% else %}
-            {{ form.password.label }}
-            {{ form.password(**{"aria-invalid": "true"})}}
+            {{ form.password.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label ") }}
+            {{ form.password(style="border: 2px solid red")}}
         
             {% for error in form.password.errors %}
             <span style="color: red;">{{ error }}</span>
             {% endfor %}
         {% endif %}
-
-
+          </div>
+      <div class="form-outline mb-4" style="padding-bottom:10px;">
       {% if not form.confirm_password.errors %}
-            {{ form.confirm_password.label }}
+            {{ form.confirm_password.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label ") }}
             {{ form.confirm_password }}
         {% else %}
-            {{ form.confirm_password.label }}
-            {{ form.confirm_password(**{"aria-invalid": "true"})}}
+            {{ form.confirm_password.label(for="colFormLabel", class="col-sm-2 col-form-label col-form-label ") }}
+            {{ form.confirm_password(style="border: 2px solid red")}}
         
             {% for error in form.confirm_password.errors %}
             <span style="color: red;">{{ error }}</span>
             {% endfor %}
         {% endif %}
-       
-        <!-- <p>{{ form.submit(type="submit") }} <br></p> -->
-      </ul>
-      <!-- Button -->
-      <p>{{ form.submit(type="submit") }} </p>
 
+      </div>
+      <div class="form-outline mb-4"> 
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }} </p>
+        </div>
+
+      </div>
     </form>
-    </main>
-  </body>
-</html>
+{% endblock %}

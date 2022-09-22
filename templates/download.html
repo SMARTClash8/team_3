@@ -3,12 +3,13 @@
 {% block head %}
     {{ super() }}
 {% endblock %}
-{% block jumbotron %}<h1>Just upload</h1>{% endblock %}
+{% block jumbotron %}<h1>Just download</h1>{% endblock %}
 {% block content %}
   <head>
     <title>File Download</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
   </head>
+  <div class="row" style="padding-bottom: 10px;"> <span class="badge badge-dark">{{ doc_type }}</span></div>
   <div class="row">
   <!-- <div class="col-lg-6" align="left"> -->
     <a href="/localsort/images" class="btn btn-primary" role="button">
@@ -26,9 +27,7 @@
         <a href="/localsort/all" class="btn btn-primary" role="button">
             All
         </a>
-    </div>
-
-        <h5 class="card-title"> <b>{{ doc_type }}</b></h5>
+    </div>   
 
 
   <table class="table table-striped">
