@@ -7,6 +7,7 @@ from asyncio import run, gather
 from queue import Queue
 
 
+
 FOLDERS = ["images", "documents", "audio", "video", "archives", "others"]
 
 folder_extension_dict = {"images": ["JPEG", "PNG", "JPG", "SVG"],
