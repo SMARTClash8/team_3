@@ -38,6 +38,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
     
 
+
 class RecordForm(FlaskForm):
     def __init__(self):
         super().__init__()
