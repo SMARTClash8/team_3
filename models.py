@@ -8,6 +8,7 @@ from sqlalchemy.sql.sqltypes import DateTime
 from db import Base, engine, db_session
 
 
+
 # таблица для связи many2many
 
 note_m2m_tag = Table(

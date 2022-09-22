@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 
 
+
 def get_wp_news():
     url = "https://www.washingtonpost.com/politics/?itid=hp_top_nav_politics"
     response = requests.get(url)
