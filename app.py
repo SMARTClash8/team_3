@@ -24,7 +24,6 @@ app.config['UPLOAD_PATH'] = 'uploads'
 bcrypt = Bcrypt(app)
 MAX_CONTENT_LENGHT = 1024 * 1024
 
-
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
