@@ -56,4 +56,3 @@ class RecordForm(FlaskForm):
         contact = db_session.query(Record).filter_by(name=name.data).from_self().filter(Record.book_id==self.book_id).first()
         if contact:
             raise ValidationError("That contact name is taken! Choose another")
-
