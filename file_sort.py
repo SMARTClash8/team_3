@@ -20,7 +20,8 @@ folder_extension_dict = {"images": ["JPEG", "PNG", "JPG", "SVG"],
 def create_sorted_folders(cwd_path):
 
     for folder in FOLDERS:
-        os.makedirs(f"{cwd_path}/{folder}", exist_ok=True)
+        gen_path = os.path.join(cwd_path,folder)
+        os.makedirs(gen_path, exist_ok=True)
 
 
 def normalize(name):
@@ -64,7 +65,8 @@ async def files_handler(base_path, path):
                 folder_to_move = key
                 break
 
-        move_file_to_path = f"{base_path}/{folder_to_move}/{new_name}"
+        #move_file_to_path = f"{base_path}/{folder_to_move}/{new_name}"
+        move_file_to_path = os.path.join(base_path,folder_to_move, new_name)
 
         if folder_to_move == "archives":
             while True:
@@ -126,7 +128,7 @@ def sort_folder(folder_path):
 
         for folder in os.listdir(folder_path):
             if folder not in FOLDERS:
-                shutil.rmtree(f"{folder_path}/{folder}")
+                shutil.rmtree(os.path.join(folder_path,folder))
         global files_path_list
         files_path_list = []
 
