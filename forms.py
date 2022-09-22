@@ -4,8 +4,7 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateF
     IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo,\
     ValidationError
-from models import User, Record, db_session
-import datetime
+from models import User, db_session
 
 
 class RegistrationForm(FlaskForm):
@@ -35,12 +34,9 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     remember = BooleanField("Remember Me")
     submit = SubmitField("Login")
-    
+
 
 class RecordForm(FlaskForm):
-    def __init__(self):
-        super().__init__()
-
     name = StringField("Name: ", validators=[DataRequired(message="You need to enter the name")])
     birthday = DateField('Birthday', format='%Y-%m-%d', validators=[DataRequired(message="You need to enter the birthday")])
     phone = StringField("Phone", validators=[DataRequired(message="You need to enter the phone"), Length(min = 10, max = 13)],)
