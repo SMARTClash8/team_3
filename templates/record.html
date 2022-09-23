@@ -4,6 +4,7 @@
 {% endblock %}
 {% block jumbotron %}<h1>Just add new addressbook</h1>{% endblock %}
 {% block content %}
+
   <a style="margin-bottom: 30px;" href="/records/{{ book_id }}" class="btn btn-primary " type="button"><span class='bi bi-arrow-left'>Privous page</span></a>
   <body>
     <main class="container">
@@ -34,9 +35,37 @@
             {% endfor %}
         {% endif %}
         
-        <p>{{ form.phone.label()}} {{form.phone()}}<br>
-        <p>{{ form.email.label()}} {{form.email()}}<br>
-        <p>{{ form.address.label()}} {{form.address()}}<br>
+        {% if not form.phone.errors %}
+          <p>{{ form.phone.label()}} {{form.phone()}}<br>
+        {% else %}
+        {{ form.phone.label }}
+            {{ form.phone(**{"aria-invalid": "true"})}}
+            {% for error in form.phone.errors %}
+            <p><span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        {% endif %}
+
+        {% if not form.email.errors %}
+          <p>{{ form.email.label()}} {{form.email()}}<br>
+        {% else %}
+        {{ form.email.label }}
+            {{ form.email(**{"aria-invalid": "true"})}}
+            {% for error in form.email.errors %}
+            <p><span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        {% endif %}
+        
+        {% if not form.address.errors %}
+          <p>{{ form.address.label()}} {{form.address()}}<br>
+        {% else %}
+        {{ form.address.label }}
+            {{ form.address(**{"aria-invalid": "true"})}}
+            {% for error in form.address.errors %}
+            <p><span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        {% endif %}
+            
+
         <p>{{ form.submit() }}<br>
       </form>
     </main>

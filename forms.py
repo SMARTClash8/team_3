@@ -8,6 +8,7 @@ from models import User, Record, db_session
 import datetime
 
 
+
 class RegistrationForm(FlaskForm):
     username = StringField("Username",
                            validators=[DataRequired(), Length(min=2, max=150)])
@@ -37,6 +38,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
     
 
+
 class RecordForm(FlaskForm):
     def __init__(self):
         super().__init__()
@@ -44,13 +46,13 @@ class RecordForm(FlaskForm):
     name = StringField("Name: ", validators=[DataRequired(message="You need to enter the name")])
     birthday = DateField('Birthday', format='%Y-%m-%d', validators=[DataRequired(message="You need to enter the birthday")])
     phone = StringField("Phone", validators=[DataRequired(message="You need to enter the phone"), Length(min = 10, max = 13)],)
-    email = StringField("Email", validators=[Email(), DataRequired(message="You need to enter the email")],)
+    email = StringField("Email", validators=[Email(message="Format should be like: example@gmail.com"), DataRequired(message="You need to enter the email")],)
     address = StringField("Address", validators=[DataRequired(message="You need to enter the address")],)
     submit = SubmitField("Submit")
 
     def validate_birthday(form, field):
         if field.data > datetime.date.today():
-            raise ValidationError("Person hasn't botn yet!")
+            raise ValidationError("Person hasn't been born yet!")
 
     def validate_name(self, name):
         contact = db_session.query(Record).filter_by(name=name.data).from_self().filter(Record.book_id==self.book_id).first()
