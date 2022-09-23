@@ -550,7 +550,7 @@ def sort_files():
 def local_sort(file_type):
 
     files = os.listdir(app.config['UPLOAD_PATH'])
-
+    user = current_user
     if file_type != "all":
         ext_folder = file_sort.folder_extension_dict[file_type]
         display_list = [x for x in files if (x.split(".")[-1].upper() in ext_folder)]
@@ -561,4 +561,4 @@ def local_sort(file_type):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')
