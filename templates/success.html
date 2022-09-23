@@ -1,40 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+{% block jumbotron %}<h1>Congratulations!!!</h1>{% endblock %}
+{% block content %}
   <head>
-    <meta charset="UTF-8" />
-    <title>Success</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
+    <title> Success </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
   </head>
-  <body>
-    <main class="container">
-      <nav
-        style="margin-bottom: 20px; border-bottom: 2px solid; padding-left: 30px"
-      >
-        <ul>
-          <li><a href="/" role="button">Main Menu</a></li>
-        </ul>
-      </nav>
 
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      {% for message in messages %}
-      
-      <article>
-      <span style="color: green;">{{ message }}</span>
-      </article>
-      {% endfor%}
-      {% endif %}
-      {% endwith %}
-      
-      
-      <ul>
-        <li><a href="/login" role="button">Login</a></li>
-      </ul>
+      <div class="card">
+        <div class="card-body">
+          {% with messages = get_flashed_messages() %}
+           {% if messages %}
+            {% for message in messages %}
+          <h2 class="card-title" style="color: green;">{{ message}}</h2>
+          {% endfor%}
+          {% endif %}
+          {% endwith %}
+          <a href="/login" class="btn btn-primary">Login</a>
+        </div>
+      </div>
 
-    </form>
-    </main>
-  </body>
-</html>
+{% endblock %}
